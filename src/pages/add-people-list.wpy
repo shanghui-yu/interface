@@ -1,0 +1,187 @@
+
+<template>
+  <view class="container">
+    <view class="title">还需添加一个出行人</view>
+    <view class="item">
+      <text class="main">新增出行人</text>
+      <navigator hover-class="none" url='/pages/add-people' class="icon add"></navigator>
+    </view>
+    <block wx:for="{{ContactsPeoples}}" wx:key="index">
+      <view class="item">
+        <view class="main">
+          <text class="icon edit" @tap="edit({{item}},{{index}})"></text>
+          <text class="label">{{item.name}}</text>{{item.cardNo}}
+        </view>
+        <view class="icon checkbox {{item.check?'select':''}}]" @tap="toggleSelet({{index}})"></view>
+      </view>
+    </block>
+    <button class="submit" disabled="{{!selectCard.length}}" @tap="isOk">确认</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+  export default class addPeople extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#ffe048',
+      navigationBarTitleText: '选择联系人'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      check: false,
+      ContactsPeoples: '',
+      selectCard: []
+    }
+
+    computed = {
+    }
+
+    methods = {
+      toggleSelet(index) {
+        this.ContactsPeoples[index].check = !this.ContactsPeoples[index].check
+        if (this.ContactsPeoples[index].check) {
+          this.selectCard.push(this.ContactsPeoples[index])
+        } else {
+          let selectCards = this.ContactsPeoples.map((item) => {
+            return item.cardNo
+          })
+          this.selectCard && this.selectCard.forEach((element, index) => {
+            if (selectCards.indexOf(element.cardNo) > -1) {
+              this.selectCard.splice(index, 1)
+            }
+          })
+        }
+        this.$apply()
+      },
+      edit(item, index) {
+        wepy.navigateTo({
+          url: `/pages/add-people?type=edit&name=${item.name}&cardNo=${item.cardNo}&index=${index}`
+        })
+      },
+      setDay() {
+
+      }
+    }
+
+    events = {
+    }
+    getContactsPeoples() {
+      try {
+        this.ContactsPeoples = wepy.getStorageSync('Contacts')
+        this.$apply()
+      } catch (error) {}
+    }
+    getSelectCard() {
+      try {
+        this.selectCard = wepy.getStorageSync('selectCard')
+        if (this.selectCard && this.selectCard.length) {
+          let selectCardInd = this.selectCard.map((item) => {
+            return item.cardNo
+          })
+          this.ContactsPeoples.map((item) => {
+            if (selectCardInd.indexOf(item.cardNo) > -1) {
+              item.check = true
+            }
+          })
+          this.$apply()
+        } else {
+          this.selectCard = []
+        }
+      } catch (error) {}
+    }
+    isOk() {
+      wepy.setStorageSync('selectCard', this.selectCard)
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+    async onShow() {
+      await this.getContactsPeoples()
+      await this.getSelectCard()
+    }
+    onLoad() {
+    }
+  }
+</script>
+<style lang="less" scoped>
+.title{
+  font-size: 40rpx;
+  font-weight: bold;
+  padding: 20rpx 32rpx; 
+}
+.item{
+  display: flex;
+  justify-content: space-between;
+  padding: 0 32rpx;
+  height: 80rpx;
+  align-items: center;
+  font-size: 28rpx;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left: 0px;
+    bottom: 0;
+    right: 0rpx;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .main{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    .label{
+      width: 140rpx;
+      display: inline-block;
+      overflow: hidden;
+      text-overflow:ellipsis;
+      white-space: nowrap;
+    }
+  }
+  .add::after{
+    content: '\e61e';
+    color:#3ba0f8;
+    font-size: 40rpx;
+  }
+  .edit{
+    margin-right: 10rpx;
+    &:after{
+      content: '\e60c'
+    }
+  }
+  .checkbox{
+    font-size: 40rpx;
+    color: #666;
+    &:after{
+      content: '\e71c'
+    }
+    &.select:after{
+      content: '\e71d';
+      color: #ffe048;
+    }
+  }
+}
+.submit{
+  position: fixed;
+  bottom: 10px;
+  left: 32rpx;
+  right: 32rpx;
+  background: rgba(254, 220, 35, 1);
+}
+button[disabled]{
+  background: rgba(254, 220, 35, 0.5) !important;
+}
+</style>

@@ -1,0 +1,151 @@
+
+<template>
+  <view class="container">
+    <!-- <view class="info-list">
+       <view class="item">
+        <text class="label">真实姓名</text>
+         <input placeholder="请输入真实姓名"/>
+       </view>
+       <view class="item">
+         <text class="label">支付宝账号</text>
+         <input placeholder="请输入支付宝账号"/>
+       </view>
+    </view> -->
+
+    <!--  -->
+    <view class="forward-monet">
+      <text>提现金额</text>
+      <view class="money">￥<input type="number" placeholder="请输入提现金额" @input="changeMoney"/></view>
+      <text class="tips">可提现金额{{option.money}}元</text>
+    </view>
+
+    <!-- 提现 -->
+    <button type="primary" hover-class="none" class="submit" @tap="submit">五个工作日到账，确认提现</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import USER from '../api/my.js'
+  export default class forwardApply extends wepy.page {
+    config = {
+      navigationBarTitleText: '申请提现',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      option: {},
+      money: 0
+    }
+
+    computed = {
+    }
+
+    methods = {
+      changeMoney(e) {
+        this.money = e.detail.value
+      },
+      submit() {
+        let json = {
+          openId: this.$parent.globalData.openId,
+          userLevel: this.option.level,
+          money: this.money
+        }
+        USER.applyCommiss(json).then(res => {
+          if (res.statusCode === 200) {
+            let {result, msg} = res.data
+            if (!result) {
+              this.showToast('提交成功', function() {
+                wx.setStorageSync('setMoney', 1)
+                setTimeout(() => {
+                  wepy.navigateBack({
+                    delta: 1
+                  })
+                }, 2e3)
+              })
+            } else {
+              this.showToast(msg)
+            }
+          }
+        })
+      }
+    }
+
+    events = {
+    }
+
+    onLoad(option) {
+      this.option = option
+    }
+  }
+</script>
+<style lang="less" scoped>
+.info-list{
+  padding: 0 32rpx;
+  .item{
+    line-height: 88rpx;
+    height: 88rpx;
+    display: flex;
+    justify-content: space-between;
+    font-size: 28rpx;
+    align-items: center;
+    .label{
+      width: 160rpx;
+    }
+    input{
+      flex:1;
+    }
+  }
+}
+.forward-monet{
+  display: flex;
+  padding: 32rpx;
+  flex-direction: column;
+  justify-content: space-between;
+  border-top: 20rpx solid #f5f5f5;
+  font-size: 28rpx;
+  color: #333333;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left: 32rpx;
+    bottom: 0;
+    right: 0rpx;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .money{
+    font-size: 58rpx;
+    margin:20rpx 0;
+    display: flex;
+    align-items: center;
+    input{
+      flex: 1;
+      height: 60rpx;
+      line-height: 60rpx;
+      font-size: 40rpx;
+    }
+  }
+  .tips{
+    color: #999999;
+  }
+}
+.submit{
+  background: #ffa800;
+  margin:40rpx 32rpx;
+}
+</style>

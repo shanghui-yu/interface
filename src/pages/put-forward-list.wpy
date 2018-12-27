@@ -1,0 +1,139 @@
+<style lang="less" scoped>
+  .forward-list{
+   .thead{
+     background: #f5f5f5;
+     font-size: 28rpx;
+     color: #999999;
+     line-height: 80rpx;
+     display: flex;
+     text{
+       flex:1;
+      text-align: center;
+     }
+   }
+   .tbody-tr{
+     line-height: 88rpx;
+     height: 88rpx;
+     font-size: 28rpx;
+     color: #333333;
+     position: relative;
+     display: flex;
+     text{
+       flex:1;
+       text-align: center;
+     }
+     .ok{
+       color: #2093FD;
+     }
+     .fall{
+       color: #BD2528;
+     }
+     &::after{
+      content:'';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      height: 1px;
+      border-bottom: 1px solid #D9D9D9;
+      color: #D9D9D9;
+      -webkit-transform-origin: 0 100%;
+      transform-origin: 0 100%;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+   }
+ }
+</style>
+<template>
+  <view class="forward-list">
+    <view class="thead">
+      <text>时间</text>
+      <text>金额</text>
+      <text>状态</text>
+    </view>
+     <block wx:for="{{lists}}" wx:key="index">
+      <view class="tbody-tr" >
+        <text>{{item.number}}</text>
+        <text>{{item.appyTime}}</text>
+        <text>{{item.extractMoney}}</text>
+      </view>
+     </block>
+  </view>
+  
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import USER from '../api/my.js'
+  export default class typeList extends wepy.page {
+    config = {
+      navigationBarTitleText: '提现列表',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      level: 0,
+      page: 1,
+      loading: true,
+      lists: []
+    }
+
+    computed = {
+    }
+    async myCommissRecord() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        userLevel: this.level,
+        page: this.page,
+        openId: this.$parent.globalData.openId
+      }
+      let res = await USER.myCommissRecord(json)
+      try {
+        if (res.statusCode === 200) {
+          let {result, data, msg} = res.data
+          wepy.hideLoading()
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              this.lists = [...this.lists, ...data]
+            } else {
+              this.loading = false
+            }
+            this.$apply()
+          } else {
+            this.showToast(msg)
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      this.myCommissRecord()
+    }
+    methods = {
+    }
+
+    events = {
+    }
+
+    onLoad(option) {
+      this.level = option.level
+      this.myCommissRecord()
+    }
+  }
+</script>

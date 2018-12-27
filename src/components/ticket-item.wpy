@@ -1,0 +1,93 @@
+<style lang="less" scoped>
+.ticket-item{
+  padding: 20rpx 32rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 28rpx;
+  color: #999;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left: 32rpx;
+    bottom: 0;
+    right: 0rpx;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .main{
+    flex:1;
+    display: flex;
+    justify-content: space-between;
+      flex-direction: column;
+    .name{
+      color: #333;
+      display: flex;
+      align-items: center;
+    }
+    .footer{
+      margin-top: 5px;
+      .type{
+        padding: 4rpx 6rpx;
+        border:1px solid #efeef3;
+      }
+      .tip::after{
+        font-family: 'tour';
+        content:'\e769';
+        margin-left: 3px;
+        display: inline-block;
+        transform: scale(0.8);
+      }
+    }
+  }
+  .price{
+    width: 160rpx;
+    height: 70rpx;
+    text-align: center;
+    line-height: 70rpx;
+    background: #fde344;
+    border-radius: 8rpx;
+    color: #333;
+  }
+}
+</style>
+<template>
+  <view class="ticket-item">
+    <view class="main" @tap="notes">
+      <view class="name">{{item.prouctName}}</view>
+      <view class="footer">
+        <!-- <text class="type">店铺</text> -->
+        <!-- <text>月售14550</text> |  -->
+        <text class="tip">预定须知</text>
+      </view>
+    </view>
+    <view @tap="toBuy({{item}})" class="price">￥{{item.price}}元起</view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import testMixin from '../mixins/test'
+  export default class ticketItem extends wepy.component {
+    mixins = [testMixin]
+    props = {
+      item: String
+    }
+    methods = {
+      notes() {
+        this.$invoke('../actionShow', 'showAction', this.item)
+      }
+    }
+
+    events = {
+    }
+
+    onLoad() {
+    }
+  }
+</script>

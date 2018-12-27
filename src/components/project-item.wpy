@@ -1,0 +1,103 @@
+<style lang="less" scoped>
+.project-item{
+    position: relative;
+    display: flex;
+    padding: 20rpx 32rpx;
+    &::after{
+      content:'';
+      position: absolute;
+      left: 32rpx;
+      bottom: 0;
+      right: 0;
+      height: 1px;
+      border-bottom: 1px solid #D9D9D9;
+      color: #D9D9D9;
+      -webkit-transform-origin: 0 100%;
+      transform-origin: 0 100%;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+    .figure{
+      width: 160rpx;
+      height: 160rpx;
+    }
+    .content{
+      flex: 1;
+      margin-left: 20rpx;
+      display: flex;
+      flex-direction: column;
+      font-size: 24rpx;
+      color: #646464;
+      height: 160rpx;
+      justify-content: space-between;
+      .name{
+        font-size: 32rpx;
+        color: #333;
+      }
+      .tips{
+        flex: 1;
+        display: flex;
+        align-items: center;
+        text{
+          margin-right: 8rpx;
+          display: inline-block;
+          padding: 6rpx 10rpx;
+          background: #f6f6f6;
+          border-radius: 6rpx;
+        }
+        .sharp{
+          background: #fff;
+          border:1px solid #13fb7b;
+          color: #13fb7b;
+        }
+      }
+      .footer{
+        display: flex;
+        justify-content: space-between;
+        .prise{
+          color: #f80a0a;
+          font-size: 32rpx;
+          margin: 0 3px 0 0;
+        }
+      }
+    }
+}
+</style>
+<template>
+  <navigator hover-class="none" url="/pages/detail?id={{item.id}}" class="project-item">
+      <image class="figure" src="{{imgUrl+item.img_path}}" />
+      <view class="content">
+        <view class="name">{{item.name}}</view>
+        <!-- <view class="tips">
+          <text class="sharp">随定随用</text>
+          <text class="sharp">随时退</text>
+          <text>随时退</text>
+        </view> -->
+        <view class="footer">
+          <view>
+            <text class="prise">{{item.price}}元</text>月售{{item.month_num}}
+          </view>
+          <text>{{item.area}}</text>
+        </view>
+      </view>
+  </navigator>
+</template>
+<script>
+  import wepy from 'wepy'
+  import testMixin from '../mixins/test'
+  export default class projectItem extends wepy.component {
+    mixins = [testMixin]
+    props = {
+      item: String
+    }
+    methods = {
+  
+    }
+
+    events = {
+    }
+
+    onLoad() {
+    }
+  }
+</script>

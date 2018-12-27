@@ -1,0 +1,179 @@
+<style lang="less">
+@font-face {
+  font-family: 'tour';  /* project id 877926 */
+  src: url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.eot');
+  src: url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.woff') format('woff'),
+  url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.svg#tour') format('svg');
+}
+@font-face {
+  font-family: 'vanca';  /* project id 553467 */
+  src: url('//at.alicdn.com/t/font_553467_0r5nmvzoy9g7rpb9.eot');
+  src: url('//at.alicdn.com/t/font_553467_0r5nmvzoy9g7rpb9.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_553467_0r5nmvzoy9g7rpb9.woff') format('woff'),
+  url('//at.alicdn.com/t/font_553467_0r5nmvzoy9g7rpb9.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_553467_0r5nmvzoy9g7rpb9.svg#vanca') format('svg');
+}
+.icon{
+  font-family: 'tour';
+}
+button{
+  border:none;
+  margin:0;
+  &::after{
+    border: none;
+  }
+}
+page{
+  height: 100%;
+}
+.container{
+  font-size: 24rpx;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+ .data-none{
+    text-align: center;
+    min-height: 100px;
+    line-height: 50px;
+    font-size: 18px;
+    .img{
+    margin:60rpx auto 0;
+      width: 281rpx;
+      height: 260rpx;
+    }
+  }
+</style>
+
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+
+import { setStore } from 'wepy-redux'
+import configStore from './store'
+import XHR from './api'
+const store = configStore()
+setStore(store)
+
+export default class extends wepy.app {
+  config = {
+    debug: true,
+    pages: [
+      'pages/index',
+      'pages/me',
+      'pages/type-list',
+      'pages/authorization',
+      'pages/my-order',
+      'pages/order-detail',
+      'pages/detail',
+      'pages/put-forward',
+      'pages/put-forward-list',
+      'pages/put-forward-apply',
+      'pages/buy-tickets',
+      'pages/add-people',
+      'pages/add-people-list',
+      'pages/refund',
+      'pages/refund2',
+      'pages/refund3',
+      'pages/my-dealer',
+      'pages/addPhone',
+      'pages/editPhone',
+      'pages/webview',
+      'pages/share-product',
+      'pages/search'
+    ],
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#fff',
+      navigationBarTitleText: 'WeChat',
+      navigationBarTextStyle: 'black'
+    },
+    tabBar: {
+      'color': '#666',
+      'selectedColor': '#000',
+      'list': [
+        {
+          'iconPath': './images/home.png',
+          'selectedIconPath': './images/home-select.png',
+          'pagePath': 'pages/index',
+          'text': '首页'
+        },
+        {
+          'iconPath': './images/me.png',
+          'selectedIconPath': './images/me-select.png',
+          'pagePath': 'pages/me',
+          'text': '我的'
+        }
+      ]
+    },
+    networkTimeout: {
+      'request': 10000,
+      'downloadFile': 10000
+    }
+  }
+
+  globalData = {
+    userInfo: null,
+    openId: ''
+  }
+
+  constructor () {
+    super()
+    this.use('requestfix')
+    this.use('promisify')
+  }
+
+  onLaunch() {
+    try {
+      let openId = wepy.getStorageSync('openId')
+      if (!openId) {
+        wepy.login().then(res => {
+          this.getopenId(res.code)
+        })
+        this.getUserInfo()
+      } else {
+        this.globalData.openId = openId
+        this.queryUser(openId)
+      }
+    } catch (error) {}
+  }
+  getopenId (code) {
+    let json = {code}
+    XHR.getUnionid(json).then(res => {
+      if (res.statusCode === 200) {
+        let {data, result} = res.data
+        if (result === '0') {
+          wx.setStorageSync('openId', data.openId)
+          this.globalData.openId = data.openId
+          this.queryUser(data.openId)
+        }
+      }
+    })
+  }
+  getUserInfo(cb) {
+    try {
+      var value = wepy.getStorageSync('userinfo')
+      var phone = wepy.getStorageSync('phone')
+      if (value) {
+        this.globalData.userInfo = value
+        this.globalData.userInfo.mobile = phone
+      }
+    } catch (e) {
+    }
+  }
+  queryUser(openId) {
+    let json = {openId}
+    XHR.queryUser(json).then(res => {
+      if (res.statusCode === 200) {
+        let {data, result} = res.data
+        if (!result) {
+          this.globalData.userInfo = data
+          wepy.setStorageSync('userinfo', data)
+          wepy.setStorageSync('phone', data.mobile)
+        }
+      }
+    })
+  }
+}
+</script>

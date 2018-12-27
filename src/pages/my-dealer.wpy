@@ -1,0 +1,136 @@
+<style lang="less" scoped>
+  .data-none{
+    text-align: center;
+    min-height: 100px;
+    line-height: 50px;
+    font-size: 18px;
+    .img{
+    margin:60rpx auto 0;
+      width: 281rpx;
+      height: 260rpx;
+    }
+  }
+</style>
+<template>
+  <view class="dealer-list">
+      <repeat for="{{lists}}" key="index" index="index" item="item">
+          <userlist :itemVal="item"></userlist>
+      </repeat>
+      <view class="data-none" wx:if="{{!lists.length}}">
+        <image class="img" src="../images/auto.png" />
+        <view>暂无数据</view>
+      </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import userList from '../components/user-list'
+  import XHR from '../api/my.js'
+  export default class myDealer extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的分销商'
+    }
+    components = {
+      toast: Toast,
+      userlist: userList
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      loading: true,
+      type: 1,
+      page: 1,
+      lists: []
+    }
+
+    computed = {
+    }
+
+    methods = {
+    }
+    // 我的分销商一级
+    async getDealers() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        page: this.page,
+        openId: this.$parent.globalData.openId
+      }
+      let res = await XHR.myDistList(json)
+      try {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              this.lists = [...this.lists, ...data]
+            } else {
+              this.loading = false
+            }
+            wepy.hideLoading()
+            this.$apply()
+          } else {
+            console.log('接口异常')
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    // 我的分销商二级
+    async getTwoList() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        page: this.page,
+        openId: this.$parent.globalData.openId
+      }
+      let res = await XHR.myDistListUser(json)
+      try {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              this.lists = [...this.lists, ...data]
+            } else {
+              this.loading = false
+            }
+            wepy.hideLoading()
+            this.$apply()
+          } else {
+            console.log('接口异常')
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      if (this.type === '1') {
+        this.getDealers()
+      } else {
+        this.getTwoList()
+      }
+    }
+    events = {
+    }
+
+    async onLoad(option) {
+      this.type = option.type
+      if (option.type === '1') {
+        await this.getDealers()
+      } else {
+        await this.getTwoList()
+      }
+    }
+  }
+</script>

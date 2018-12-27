@@ -1,0 +1,681 @@
+
+<template>
+  <view class="container">
+    <view class="top-title">{{tickets.name}}</view>
+
+    <view class="time-info">
+      <view class="time-title">使用日期</view>
+      <view class="content">
+        <block wx:for="{{priceDateThree}}" wx:key="index">
+        <view class="time-list {{item.stockNum<1 && item.stockNum!=-999?'disabled':''}} {{index==action?'select':''}}"  @tap="changeTime({{item}},{{index}})">
+          <text class="time" wx:if="{{index==0}}">今天{{item.data}}</text>
+          <text class="time" wx:if="{{index==1}}">明天{{item.data}}</text>
+          <text class="time" wx:if="{{index==2}}">{{weekly[item.week]}}</text>
+          <text class="status">{{item.price}}￥</text>
+        </view>
+        </block>
+        <view class="time-list filter" @tap="showAction">
+          <text class="time icon"></text>
+          <text class="status">更多</text>
+        </view>
+      </view>
+    </view>
+    <!-- 选中时间 -->
+    <text class="select-time" wx:if="{{submit.payDate}}">{{submit.payDate}}</text>
+    
+    <view class="add-tickets">
+      <view class="label">购买数量（每单限定{{tickets.maxBuyNum}}张）</view>
+      <view class="content">
+        <view class="btn reduce"  @tap="reduce"></view>
+        <input value="{{submit.num}}"/>
+        <view class="btn add" @tap="add"></view>
+      </view>
+    </view>
+
+    <!-- 出行人信息 -->
+    <view class="list" wx:if="{{tickets.isRealName>0}}">
+      <view class="item title">出行信息</view>
+      <block wx:for="{{selectCard}}" wx:key="index">
+        <view class="item">
+          <view class="bable">出行人</view>
+          <input disabled class="main" placeholder="请添加一个出行人" value="{{item.name}}"/>
+        </view>
+      </block>
+      <view class="item" wx:if="{{tickets.isRealName==1&&!selectCard.length}}">
+        <view class="bable">出行人</view>
+        <input disabled class="main" placeholder="请添加一个出行人"/>
+        <navigator hover-class="none" url="/pages/add-people-list" class="add"></navigator>
+      </view>
+      <view class="item" wx:if="{{tickets.isRealName>1}}" wx:for="{{defaltSelectCard}}">
+        <view class="bable">出行人</view>
+        <input disabled class="main" placeholder="请添加一个出行人"/>
+        <view @tap="addTrip"  class="add"></view>
+      </view>
+    </view>
+    
+    <!-- 预定人信息 -->
+    <view class="list">
+      <view class="item title">预定人信息</view>
+      <view class="item">
+        <view class="bable">联系人</view>
+         <input class="main" value="{{submit.username}}" placeholder="请输入预定人姓名" @input="changeUsername"/>
+      </view>
+      <view class="item">
+        <view class="bable">手机号</view>
+         <input class="main" value="{{submit.mobile}}" placeholder="请输入预定人手机号" @input="changeMobile"/>
+      </view>
+    </view>
+    <view class="tips">点击提交表示阅读并同意
+      <navigator hover-class="none" url='/pages/type-list'>《服务旅游协议》、</navigator>
+      <navigator hover-class="none" url='/pages/type-list'>《旅游安全须知》</navigator>
+    </view>
+
+    <!-- 下单 -->
+    <view class="footer">
+      <view class="money">
+        <text>总价</text>
+        <text class="price">￥{{allPrice}}</text>
+      </view>
+      <button plain  class="submit" @tap="submitFun">立即购买</button>
+    </view>
+
+    <actionShow>
+      <view slot="title" class="actionShow-top">
+        <view class="content">选择使用日期</view>
+        <view class="close" @tap="closeAction"></view>
+      </view>
+      <view slot="content">
+        <scroll-view scroll-y  style="height:{{height}}"  class="actionShow-content">
+          <repeat for="{{tickets.month}}" key="index" item="item">
+            <weeklyList :month.sync="item" :keys.sync="index" type="product"></weeklyList>
+          </repeat>
+        </scroll-view>
+      </view>
+    </actionShow>
+  </view>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import ActionShow from '../components/actionShow'
+  import WeeklyList from '../components/weekly-list'
+  import XHR from '../api/index.js'
+  import dayjs from 'dayjs'
+  export default class buyTickets extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#ffe048',
+      navigationBarTitleText: '确认订单',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast,
+      actionShow: ActionShow,
+      weeklyList: WeeklyList
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      height: 400,
+      weekly: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+      tickets: {},
+      productId: '',
+      action: null,
+      Reserve: [],
+      price: '',
+      allPrice: 0, // 总数
+      selectCard: [], // 出行人
+      defaltSelectCard: [1], // 默认出行人
+      selectCardLength: 0,
+      priceDateThree: [],
+      submit: {
+        openId: '',
+        productId: '',
+        mobile: '',
+        username: '',
+        isRealName: null,
+        num: 1,
+        payDate: '',
+        name: '',
+        cardNo: ''
+      }
+    }
+
+    computed = {
+    }
+
+    methods = {
+      closeAction() {
+        this.$invoke('actionShow', 'closeAction')
+      },
+      showAction() {
+        this.$invoke('actionShow', 'showAction')
+      },
+      add() {
+        if (this.submit.num < this.tickets.maxBuyNum) {
+          this.submit.num++
+          this.defaltSelectCard.push(1)
+        } else {
+          this.showToast(`不能超过${this.tickets.maxBuyNum}`)
+        }
+        this.allPrice = this.toDecimal2(this.price * this.submit.num)
+      },
+      reduce() {
+        if (this.submit.num > this.tickets.minBuyNum) {
+          this.submit.num--
+          this.defaltSelectCard.splice(0, 1)
+        } else {
+          this.showToast(`不能少于${this.tickets.minBuyNum}`)
+        }
+        this.allPrice = this.toDecimal2(this.price * this.submit.num)
+      },
+      changeTime(item, index) {
+        this.action = index
+        this.submit.payDate = item.date
+        this.price = item.price
+        this.allPrice = this.toDecimal2(item.price * this.submit.num)
+        this.$apply()
+      },
+      addTrip() {
+        this.selectCardLength = this.selectCard.length
+        this.$apply()
+        wepy.navigateTo({
+          url: `/pages/add-people-list`
+        })
+      },
+      changeUsername(e) {
+        this.submit.username = e.detail.value
+        this.$apply()
+      },
+      changeMobile(e) {
+        this.submit.mobile = e.detail.value
+        this.$apply()
+      }
+    }
+    floor(num) {
+      return Math.floor(num) / 100
+    }
+    events = {
+      'selectTime': (p1, $event) => {
+        this.$invoke('actionShow', 'closeAction')
+        this.submit.payDate = p1.date
+        this.price = p1.price
+        this.allPrice = this.toDecimal2(p1.price * this.submit.num)
+      }
+    }
+    buyShop() {
+      let json = {
+        productId: this.submit.productId,
+        openId: this.$parent.globalData.openId
+      }
+      XHR.buyShop(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            data.month = {}
+            let num = 0
+            data.priceDate.forEach((element, index) => {
+              let key = dayjs(element.date).format('YYYY-MM')
+              element.newDate = dayjs(element.date).format('MM-DD')
+              let week = Number(dayjs(element.date).format('d'))
+              element.week = dayjs(element.date).format('d')
+              element.index = index
+  
+              if (!data.month[key]) {
+                data.month[key] = {}
+              }
+              if (!data.month[key][num]) {
+                data.month[key][num] = []
+              }
+              if (dayjs(element.date).format('YYYY-MM') === key) {
+                if (index === 0) {
+                  if (week === 0) {
+                    data.month[key][0].push(element)
+                  } else {
+                    data.month[key][0] = ['', '', '', '', '', '', '']
+                    data.month[key][0].splice(week++, 1, element)
+                  }
+                } else {
+                  if (week === 0) {
+                    num = num + 1
+                    data.month[key][num] = []
+                    data.month[key][num][0] = element
+                  } else {
+                    data.month[key][num][week] = (element)
+                  }
+                }
+              }
+            })
+            this.priceDateThree = data.priceDate.splice(0, 3)
+            this.tickets = data
+            this.submit.mobile = data.mobile
+            this.submit.username = data.realName
+            this.submit.isRealName = data.isRealName
+            wepy.setNavigationBarTitle({
+              title: data.name
+            })
+            this.$apply()
+          }
+        }
+      })
+    }
+    checkSubmit() {
+      if (this.submit.payDate === '') {
+        this.showToast('请选择出行时间')
+        return false
+      } else if (this.submit.mobile === '') {
+        this.showToast('预定手机号不能为空')
+        return false
+      } else if (this.submit.username === '') {
+        this.showToast('预订人不能为空')
+        return false
+      }
+      switch (this.tickets.isRealName) {
+        case 1:
+          if (this.selectCard.length > 1) {
+            this.showToast('出行人只能选择一张')
+            return false
+          } else {
+            let name = this.selectCard.map(item => { return item.name })
+            let cardNo = this.selectCard.map(item => { return item.cardNo })
+            this.submit.name = name.join(',')
+            this.submit.cardNo = cardNo.join(',')
+          }
+          break
+        case 2:
+          if (this.submit.num !== this.selectCard.length) {
+            this.showToast('票数和出行人数不匹配，请重新选择')
+            return false
+          } else {
+            let name = this.selectCard.map(item => { return item.name })
+            let cardNo = this.selectCard.map(item => { return item.cardNo })
+            this.submit.name = name.join(',')
+            this.submit.cardNo = cardNo.join(',')
+          }
+          break
+      }
+    }
+    submitFun() {
+      if (this.checkSubmit() === false) {
+        return
+      }
+      wepy.showLoading({ title: '下单中请等待' })
+      XHR.buyOk(this.submit).then(res => {
+        if (res.statusCode === 200) {
+          let {result, msg, data} = res.data
+          wepy.hideLoading()
+          if (!result) {
+            this.toOrder(data)
+          } else {
+            this.showToast(msg)
+          }
+        } else {
+          console.log('接口异常')
+        }
+      })
+    }
+    toOrder(data) {
+      wx.showModal({
+        title: '恭喜您,下单成功!',
+        content: '点击确定按钮进行支付 ',
+        success: (res) => {
+          if (res.confirm) {
+            this.toBuyOrder(data[0].id)
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        }
+      })
+    }
+    // 获取购买人
+    getSelectCard() {
+      try {
+        this.selectCard = wepy.getStorageSync('selectCard')
+        if (this.selectCard.length && this.selectCard.length > this.selectCardLength) {
+          let num = this.selectCard.length - this.selectCardLength
+          this.defaltSelectCard.splice(0, num)
+        }
+        this.$apply()
+      } catch (error) {}
+    }
+    toBuyOrder(id) {
+      let json = {
+        openId: this.submit.openId,
+        id
+      }
+      XHR.payment(json).then(res => {
+        if (res.statusCode === 200) {
+          let {data, result} = res.data
+          if (!result) {
+            wx.requestPayment({
+              timeStamp: data.timeStamp,
+              nonceStr: data.nonceStr,
+              package: data.package,
+              signType: data.signType,
+              paySign: data.paySign,
+              success: (res) => {
+                this.showToast('支付成功', function() {
+                  setTimeout(() => {
+                    wepy.switchTab({
+                      url: '/pages/me'
+                    })
+                  }, 2e3)
+                })
+              },
+              fail (res) { }
+            })
+          }
+        }
+      })
+    }
+    userDistribution(distId) {
+      try {
+        let openId = wepy.getStorageSync('openId')
+        let json = {
+          openId,
+          distId
+        }
+        XHR.userDistribution(json).then(res => {
+          console.log(res.data)
+        })
+      } catch (error) {}
+    }
+    onShow() {
+      this.getSelectCard()
+    }
+    onLoad(option) {
+      if (option.distId) {
+        wepy.setStorageSync('distId', option.distId)
+        this.userDistribution(option.distId)
+      }
+      this.submit.productId = option.id
+      this.price = Number(option.price)
+      this.allPrice = this.toDecimal2(this.price * this.submit.num)
+      wepy.setStorageSync('selectCard', [])
+      this.submit.openId = this.$parent.globalData.openId
+      this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 45 + 'px'
+      this.buyShop()
+      this.$apply()
+    }
+  }
+</script>
+<style lang="less" scoped>
+.top-title{
+  background-image:linear-gradient(to bottom,#fce35b 0%,#fae886 60%,#f7ecac 100%);
+  height: 120rpx;
+  display: flex;
+  align-items: center;
+  font-size: 50rpx;
+  font-weight: bold;
+  color: #000;
+  padding: 0 32rpx;
+}
+.select-time{
+  padding:  20rpx 32rpx;
+  font-size: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  margin:20rpx 0 -20rpx;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left: 0px;
+    bottom: 0;
+    right: 0rpx;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+}
+.time-info{
+  padding: 0 32rpx 20rpx;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left: 0px;
+    bottom: 0;
+    right: 0rpx;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .time-title{
+    height: 80rpx;
+    line-height: 80rpx;
+  }
+  .content{
+    display: flex;
+    .time-list{
+      padding: 20rpx 0;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+       align-items: center;
+      margin-right: 10rpx;
+      background: #f4f8fb;
+      border:1px solid #e9edf0;
+      font-size: 28rpx;
+      .status{
+        font-size: 32rpx;
+        margin-top: 10rpx;
+      }
+    }
+    .select{
+      background: #fce35b;
+    }
+    .disabled{
+      color: #bdc1c4;
+    }
+    .filter{
+      flex: inherit;
+      width: 100rpx;
+      margin-right: 0;
+      .icon::after{
+        font-family: 'tour';
+        content: '\e769';
+        display: inline-block;
+        transform:rotate(90deg);
+      }
+    }
+  }
+  
+}
+.add-tickets{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32rpx;
+  height: 88rpx;
+  margin-top: 20rpx;
+  .lable{
+    font-size: 32rpx;
+    color: #000;
+    flex: 1;
+  }
+  .content{
+    width: 190rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .btn{
+      width: 56rpx;
+      height: 56rpx;
+      border-radius: 50%;
+      border:1px solid #f5f5f5;
+      background: #f4f8fb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &::after{
+        font-family: 'tour';
+        content:'\e61e';
+      }
+      &.reduce:after{
+        content: '\eee2'
+      }
+    }
+    input{
+      border:none;
+      flex: 1;
+      text-align: center;
+    }
+  }
+}
+ .list{
+   border-top: 20rpx solid #f5f5f5; 
+   .item{
+      position: relative;
+      display: flex;
+      height:80rpx;
+      align-items: center;
+      padding: 0 32rpx;
+      font-size: 28rpx;
+      &.title{
+        font-size: 32rpx;
+        color: #000;
+        font-weight: bold;
+      }
+      .main{
+        flex: 1;
+      }
+      .add{
+        font-family: 'tour';
+        width: 80rpx;
+        height: 80rpx;
+        text-align: center;
+        line-height: 80rpx;
+        &::after{
+          content:'\e61e';
+          font-size: 32rpx;
+          color: #5a8cdd;
+        }
+      }
+      &::after{
+        content:'';
+        position: absolute;
+        left: 0px;
+        bottom: 0;
+        right: -32rpx;
+        height: 1px;
+        border-bottom: 1px solid #D9D9D9;
+        color: #D9D9D9;
+        -webkit-transform-origin: 0 100%;
+        transform-origin: 0 100%;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+      }
+      .bable{
+        width: 120rpx;
+      }
+   }
+ }
+ .tips{
+   margin:40rpx auto;
+   font-size: 24rpx;
+   padding: 0 32rpx;
+   word-break: break-all;
+   navigator{
+     display: inline-block;
+     color: #629ff8;
+   } 
+ }
+ .container{
+   padding-bottom: 100rpx;
+   box-sizing: border-box;
+ }
+ .footer{
+   position: fixed;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   height: 100rpx;
+   padding: 0 32rpx;
+   box-sizing: border-box;
+   box-shadow: 0px 1px 1px 1px rgba(0,0,0,0.20);
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   .money{
+     display: flex;
+     justify-content: space-between;
+     flex-direction: column;
+     flex: 1;
+     font-size: 24rpx;
+     .price{
+       color: #fd5c5b;
+       font-size: 32rpx;
+     }
+   }
+   .submit{
+     min-width: 200rpx;
+     height: 80rpx;
+     border-radius: 40rpx;
+     background: #ffda23;
+     line-height: 80rpx;
+     text-align: center;
+     border:none;
+     font-size: 36rpx;
+   }
+ }
+ .actionShow-top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  height: 40px;
+  box-sizing: border-box;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left:0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .content{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    color: #666;
+    .title{
+      font-size: 40rpx;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+  .close{
+    width: 60rpx;
+    height: 60rpx;
+    text-align: center;
+    line-height: 60rpx;
+    &::after{
+      font-family: 'tour';
+      content:'\e608';
+      font-size: 40rpx;
+    }
+  }
+}
+</style>

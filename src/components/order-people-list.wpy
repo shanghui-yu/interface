@@ -1,0 +1,47 @@
+<style lang="less" scoped>
+.action-list{
+  padding: 32rpx;
+  .title{
+     font-size: 40rpx;
+    font-weight: bold;
+    color: #333;
+    padding-bottom: 32rpx;
+  }
+  .item{
+   display: flex;
+   align-items: center;
+   justify-content:space-between;
+   height: 60rpx;
+ }
+}
+</style>
+<template>
+<view class="action-list">
+  <text class="title">出行人{{index+1}}</text>
+  <view class="item">
+    <text class="lable">中文姓名：</text>
+    <text class="main">{{item.name}}</text>
+  </view>
+  <view class="item">
+    <text class="lable">身份证：</text>
+    <text class="main">{{item.cardId}}</text>
+  </view>
+  <view class="item">
+    <text class="lable">电话号：</text>
+    <text class="main">{{item.tel}}</text>
+  </view>
+</view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class orderPeopleList extends wepy.component {
+    props = ['item', 'index']
+    methods = {
+    }
+  
+    data = {
+    }
+    onLoad() {
+    }
+  }
+</script>

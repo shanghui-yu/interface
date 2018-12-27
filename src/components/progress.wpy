@@ -1,0 +1,104 @@
+<style lang="less" scoped>
+.refund-progress{
+  display: flex;
+  height: 160rpx;
+  .item{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #000;
+    font-size: 32rpx;
+    position: relative;
+    z-index: 1;
+    .num{
+      margin-bottom: 20rpx;
+      width: 46rpx;
+      height: 46rpx;
+      border-radius: 50%;
+      background: #e5e5e5;
+      text-align: center;
+      &::after{
+        content:'';
+        height:10rpx;
+        background: #e5e5e5;
+        position: absolute;
+        display: inline-block;
+        width: 50%;
+        left: 50%;
+        top:48rpx;
+        z-index: -1;
+      }
+    }
+    &:nth-child(2) .num{
+      &::before{
+        content:'';
+        height:10rpx;
+        background: #e5e5e5;
+        position: absolute;
+        display: inline-block;
+        width: 50%;
+        left: 0;
+        top:48rpx;
+        z-index: -1;
+      }
+    }
+    &:last-child .num{
+      &::before{
+        content:'';
+        height:10rpx;
+        background: #e5e5e5;
+        position: absolute;
+        display: inline-block;
+        width: 50%;
+        left: 0;
+        top:48rpx;
+        z-index: -1;
+      }
+      &::after{
+        content:'';
+        width: 0;
+        left: 0;
+        display: none;
+      }
+    }
+    &.select .num{
+      background: #ffdc2c;
+      &::after,&::before{
+        background: #ffdc2c;
+      }
+    }
+  }
+}
+</style>
+<template>
+<view class="refund-progress">
+  <view class="item {{index>0?'select':''}}">
+    <text class="num">1</text>
+    <text>申请退款</text>
+  </view>
+  <view class="item {{index>1?'select':''}}">
+    <text class="num">2</text>
+    <text>确认退款</text>
+  </view>
+  <view class="item {{index>2?'select':''}}">
+    <text class="num">3</text>
+    <text>退款完成</text>
+  </view>
+</view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class progress extends wepy.component {
+    props =['index']
+    methods = {
+    }
+
+    events = {
+    }
+
+    onLoad() {
+    }
+  }
+</script>

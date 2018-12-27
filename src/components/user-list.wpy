@@ -1,0 +1,60 @@
+<style lang="less" scoped>
+.item{
+  line-height: 88rpx;
+  height: 88rpx;
+  display: flex;
+  justify-content: space-between;
+  font-size: 28rpx;
+  align-items: center;
+  position: relative;
+  padding: 0 32rpx;
+  &::after{
+    content:'';
+    position: absolute;
+    left: 32rpx;
+    bottom: 0;
+    right: 0rpx;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .main{
+    flex:1;
+    display: flex;
+    align-items: center;
+    image{
+      width: 64rpx;
+      height: 64rpx;
+    }
+  }
+}
+</style>
+<template>
+ <view class="item" wx:if="{{itemVal.name&&itemVal.name!=''||itemVal.nikeName!=''}}">
+    <view class="main">
+      <image src="{{itemVal.avatarUrl}}"  wx:if="{{itemVal.avatarUrl}}"/>
+      <text class="label">{{itemVal.name?itemVal.name:itemVal.nikeName}}</text>
+    </view>
+    <text class="right" wx:if="{{itemVal.mobile}}">{{itemVal.mobile}}</text>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class userList extends wepy.component {
+    props = {
+      itemVal: Object
+    }
+    methods = {
+  
+    }
+    events = {
+    }
+
+    onLoad() {
+    }
+  }
+</script>

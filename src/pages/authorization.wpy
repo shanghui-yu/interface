@@ -1,0 +1,99 @@
+<style lang="less" scoped>
+.container{
+  padding: 0 32rpx;
+  text-align: center;
+  .img{
+    margin:60rpx auto 0;
+    width: 281rpx;
+    height: 260rpx;
+  }
+  .des{
+    margin:60rpx auto;
+    display: block;
+    font-size: 40rpx;
+  }
+  button{
+    margin-top: 20rpx;
+  }
+}
+</style>
+<template>
+  <view class="container">
+   <image class="img" src="../images/auto.png" />
+   <text class="des">允许微信授权功能后，可体验更多功能</text>
+   <button type="primary" hover-class="none" open-type="getUserInfo" bindgetuserinfo="bindgetuserinfo">授权登陆</button>
+   <button type="default" hover-class="none" plain bindtap="gohome">返回首页</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import XHR from '../api/'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '授权'
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      option: {}
+    }
+
+    computed = {
+    }
+
+    methods = {
+      gohome() {
+        wepy.switchTab({
+          url: '/pages/index'
+        })
+      }
+    }
+    bindgetuserinfo(res) {
+      if (res.detail.userInfo) {
+        try {
+          this.toAuthorization(res.detail.userInfo)
+        } catch (e) { }
+      } else {
+        this.showToast('很遗憾，您拒绝了微信授权，宝宝很伤心', function() {
+          setTimeout(() => {
+            wepy.switchTab({
+              url: '/pages/index'
+            })
+          }, 2e3)
+        })
+      }
+    }
+    toAuthorization(json) {
+      json.openId = this.$parent.globalData.openId
+      XHR.authorization(json).then(res => {
+        if (res.statusCode === 200) {
+          this.authorOk(json)
+        } else {
+          console.log('接口异常')
+        }
+      }).catch(e => {
+        console.log('接口异常')
+      })
+    }
+    authorOk(json) {
+      wepy.setStorageSync('userinfo', json)
+      this.$parent.globalData.userInfo = json
+      wepy.navigateTo({
+        url: `/pages/addPhone?type=${this.option.type}`
+      })
+    }
+    events = {
+    }
+
+    onLoad(option) {
+      this.option = option
+    }
+  }
+</script>

@@ -1,0 +1,136 @@
+
+<template>
+  <view class="container">
+    <view class="menu">
+      <text class="item {{index==action?'select':''}}" @tap="tabs({{index}})"  wx:for="{{menu}}" wx:key="index">{{item}}</text>
+    </view>
+    <view class="data-none" wx:if="{{!shopList.length}}">
+       <image class="img" src="../images/auto.png" />
+      <view>暂无数据</view>
+    </view>
+    <view class="project-list" wx:else> 
+      <repeat for="{{shopList}}" key="index" index="index" item="item">
+        <projectitem :item="item"></projectitem>
+      </repeat>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import projectItem from '../components/project-item'
+  import XHR from '../api/'
+  export default class typeList extends wepy.page {
+    config = {
+      navigationBarTitleText: '商品列表',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast,
+      projectitem: projectItem
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      action: 0,
+      menu: [ '综合', '最新', '价格', '销量' ],
+      loading: true,
+      shopList: [],
+      page: 1,
+      option: {}
+    }
+
+    computed = {
+    }
+
+    methods = {
+      tabs(index) {
+        this.action = index
+        this.page = 1
+        this.loading = true
+        this.getShopList('switch')
+      }
+    }
+
+    events = {
+    }
+    async getShopList(type) {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      let json = {
+        kindId: this.option.id,
+        level_kind: this.option.kind_level,
+        order: this.action,
+        page: this.page
+      }
+      let res = await XHR.getShopList(json)
+      try {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              if (type) {
+                this.shopList = data
+              } else {
+                this.shopList = [...this.shopList, ...data]
+              }
+            } else {
+              this.loading = false
+            }
+            wepy.hideLoading()
+            this.$apply()
+          } else {
+            console.log('接口异常')
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    onReachBottom() {
+      this.getShopList()
+    }
+    onLoad(option) {
+      this.option = option
+      this.getShopList()
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .menu{
+    display: flex;
+    justify-content:space-between;
+    font-size: 32rpx;
+    box-shadow: 0px 1px 1px -1px rgba(0,0,0,0.20);
+    .item{
+      flex: 1;
+      height: 88rpx;
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+    .select{
+      color: #fc0000;
+      &::after{
+        content: '';
+        height: 3px;
+        width: 60%;
+        background: #fc0000;
+        position: absolute;
+        bottom: 0;
+      }
+    }
+  }
+ 
+</style>

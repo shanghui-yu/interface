@@ -1,0 +1,95 @@
+<style lang="less" scoped>
+  .time-wrap{
+    .name{
+      height: 80rpx;
+      line-height: 80rpx;
+      text-align: center;
+      font-size: 28rpx;
+      border-top: 1rpx solid #f3f3f3;
+    }
+    .row{
+      display: flex;
+      margin:0 auto;
+      &.head{
+        background: #f3f3f3;
+      }
+      .item{
+        width: 14%;
+        float: left;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 5px;
+        box-sizing: border-box;
+        font-size: 24rpx;
+        .price{
+          color: #e94d2e;
+        }
+      }
+      .select{
+        background: #fce35b;
+      }
+    }
+  }
+</style>
+<template>
+ <view class="time-wrap">
+  <view class="name">{{keys}}</view>
+  <view class="row head">
+    <text wx:for="{{weekly}}" wx:key="index" class="item">{{item}}</text>
+  </view>
+  <view class="row" wx:for="{{month}}" wx:key="index">
+    <block wx:for="{{item}}" wx:key="idx"  wx:for-index="idx" wx:for-item="week">
+      <view class="item {{week.index==aIndex?'select':''}}" wx:if="{{type!='share'}}" @tap="selectTime({{week}})">
+        <text>{{week.newDate}}</text>
+        <text class="price" wx:if="{{week.price}}">{{week.price}}￥</text>
+        <text wx:if="{{week.stockNum==-999}}">充足</text>
+        <text wx:elif="{{week.stockNum<1}}">暂无</text>
+        <text wx:else>{{week.stockNum}}</text>
+      </view>
+      <view class="item {{week.newDate==nowData?'select':''}}" wx:else>
+        <text>{{week.newDate}}</text>
+        <text class="price" wx:if="{{week.salePrice}}">{{week.salePrice}}￥</text>
+        <text wx:if="{{week.distPrice1}}">{{week.distPrice1}}￥</text>
+      </view>
+    </block>
+  </view>
+  <view></view>
+</view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import dayjs from 'dayjs'
+  export default class weeklyList extends wepy.component {
+    props ={
+      month: {
+        type: Object,
+        twoWay: true
+      },
+      keys: {
+        type: String
+      },
+      type: {
+        type: String
+      }
+    }
+    methods = {
+      selectTime(item) {
+        this.aIndex = item.index
+        this.$emit('selectTime', item)
+        this.$apply()
+      }
+    }
+    events = {
+    }
+    data={
+      nowData: '',
+      aIndex: 999,
+      weekly: ['日', '一', '二', '三', '四', '五', '六']
+    }
+    onLoad() {
+      this.nowData = dayjs().format('MM-DD')
+    }
+  }
+</script>

@@ -1,0 +1,132 @@
+
+<template>
+  <view class="container">
+    <!-- 进度 -->
+    <progress index="3"></progress>
+    <!-- 状态 -->
+    <view class="status-ok">
+      <image src="../images/refuntok.png" class="slide-image"/>
+      <text>{{status}}</text>
+    </view>
+     <view class="list">
+      <view class="item">
+        <text class="lable">申请时间：</text><text class="content">{{refundList.applyTime}}</text>
+      </view>
+      <view class="item">
+        <text class="lable">退票张数：</text><text class="content">{{refundList.refundNum}}</text>
+      </view>
+      <view class="item">
+        <text class="lable">退款金额：</text>￥<text class="content">{{refundList.refundMoney}}</text>
+      </view>
+      <view class="item">
+        <text class="lable">退款状态：</text><text class="content">{{refundList.refundStatus}}</text>
+      </view>
+      <view class="item">
+        <text class="lable">退款说明：</text><text class="content">{{refundList.memo}}</text>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import testMixin from '../mixins/test'
+  import Progress from '../components/progress'
+  import USER from '../api/my.js'
+  export default class refund extends wepy.page {
+    config = {
+      navigationBarTitleText: '退款申请',
+      usingComponents: {
+      }
+    }
+    components = {
+      progress: Progress
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      status: '',
+      orderId: '',  // 订单id
+      returnId: '', // 退款记录id
+      refundList: []
+    }
+
+    computed = {
+    }
+
+    methods = {
+  
+    }
+
+    events = {
+    }
+
+    myOrderReturn() {
+      let json = {
+        orderId: this.orderId,
+        openId: this.$parent.globalData.openId,
+        returnId: this.returnId
+      }
+      USER.myOrderReturn(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            this.refundList = data
+            this.$apply()
+          }
+        }
+      })
+    }
+    onLoad(option) {
+      this.status = option.status
+      this.orderId = option.orderId
+      this.returnId = option.returnId
+      this.myOrderReturn()
+    }
+  }
+</script>
+<style lang="less" scoped>
+.status-ok{
+  text-align: center;
+  color: #feda2a;
+  font-size: 40rpx;
+  padding-bottom: 20px;
+  image{
+    display: block;
+    width: 270rpx;
+    height: 179rpx;
+    margin:40rpx auto;
+  }
+}
+.list{
+     padding: 0 16px;
+    .item{
+      position: relative;
+      display: flex;
+      height:80rpx;
+      align-items: center;
+      overflow: hidden;
+      &::after{
+        content:'';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: -32rpx;
+        height: 1px;
+        border-bottom: 1px solid #D9D9D9;
+        color: #D9D9D9;
+        -webkit-transform-origin: 0 100%;
+        transform-origin: 0 100%;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+      }
+      .lable{
+        margin-right: 20rpx;
+      }
+      .content{
+        flex: 1;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,483 @@
+<style lang="less" scoped>
+  .product{
+    display: flex;
+    height: 160rpx;;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e8e8e6;
+    flex-direction: row;
+    padding: 10px;
+    border-top: 10rpx solid #f5f5f5;
+    &:first-child{
+      border-top: none;
+    }
+    .btn{
+        width: 160rpx;
+        height: 60rpx;
+        font-size: 30rpx;
+        line-height: 60rpx;
+        text-align: center;
+        padding: 0;
+    }
+    .figure{
+      width: 160rpx;
+      height: 160rpx;
+      margin-right: 10rpx;
+    }
+    .main{
+      font-size: 30rpx;
+      flex:1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      color: #333;
+      .footer-text{
+        display: flex;
+        align-items: center;
+      }
+    }
+    
+    .footer{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      height: 100%;
+    }
+    .share{
+      margin-top: 20rpx;
+    }
+  }
+  .actionShow-top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  height: 40px;
+  box-sizing: border-box;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left:0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .content{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    color: #666;
+    .title{
+      font-size: 40rpx;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+  .close{
+    width: 60rpx;
+    height: 60rpx;
+    text-align: center;
+    line-height: 60rpx;
+    &::after{
+      font-family: 'tour';
+      content:'\e608';
+      font-size: 40rpx;
+    }
+  }
+}
+.mask{
+  position: fixed;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, .6);
+}
+.pop-img{
+  position: fixed;
+  z-index: 5000;
+  width: 80%;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  background-color: #FAFAFC;
+  text-align: center;
+  border-radius: 3px;
+  overflow: hidden;
+  box-sizing: border-box;
+  .canvas{
+    margin: 20px auto;
+  }
+  .footer{
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    .btn{
+      width: 48%;
+      height: 80rpx;
+      font-size: 30rpx;
+      line-height: 60rpx;
+      text-align: center;
+      padding: 0;
+      line-height: 80rpx;
+    }
+    .share-friends{
+      background: #5bc0de;
+      color: #fff;
+    }
+  }
+}
+</style>
+<template>
+  <view>
+      <block wx:for="{{lists}}" wx:key="index" >
+          <view class="product">
+            <image class="figure" src="{{imgUrl+item.picPath}}" />
+            <view class="main">
+              <view class="label">{{item.productName}}</view>
+              <view class="label footer-text">最低价：{{item.salePrice}}元</view>
+            </view>
+            <view class="footer">
+              <button class="btn" type="warn" @tap="showAction({{item.productId}})">价格</button>
+              <button class="btn share" type="primary" @tap="showShare({{item}})" wx:if="{{level==2}}">去分享</button>
+             </view>
+          </view>
+      </block>
+      <view class="data-none" wx:if="{{!lists.length&&ajaxStatus}}">
+        <image class="img" src="../images/auto.png" />
+        <view>暂无分销产品</view>
+      </view>
+      
+      <actionShow>
+        <view slot="title" class="actionShow-top">
+          <view class="content">选择使用日期</view>
+          <view class="close" @tap="closeAction"></view>
+        </view>
+        <view slot="content">
+          <scroll-view scroll-y  style="height:{{height}}"  class="actionShow-content">
+            <repeat for="{{times}}" key="index" item="item">
+              <weeklyList :month.sync="item" :keys.sync="index" type="share"></weeklyList>
+            </repeat>
+          </scroll-view>
+        </view>
+      </actionShow>
+
+      <!-- 海报 -->
+      <view wx:if="{{showPoster}}" class="mask" @tap="closePop"></view>
+      <view class="pop-img" hidden="{{!showPoster}}">
+        <canvas class="canvas" style='width:{{windowW}}px;height:{{windowH}}px' canvas-id="firstCanvas"></canvas>
+        <view class="footer">
+          <button class="btn share-friends" @tap="saveImage">保存图片</button>
+          <button class="btn share"  open-type="share" type="primary">发送给好友</button>
+        </view>
+      </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import testMixin from '../mixins/test'
+  import userList from '../components/user-list'
+  import ActionShow from '../components/actionShow'
+  import WeeklyList from '../components/weekly-list'
+  import XHR from '../api/my.js'
+  import dayjs from 'dayjs'
+  export default class myDealer extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的分销产品'
+    }
+    components = {
+      actionShow: ActionShow,
+      weeklyList: WeeklyList,
+      userlist: userList
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      windowW: 0,
+      windowH: 0,
+      height: 400,
+      times: {},
+      loading: true,
+      page: 1,
+      lists: [],
+      level: 0,
+      canvasImg: '',
+      ajaxStatus: false,
+      share: {
+        productName: '欢迎购买',
+        productId: '',
+        salePrice: '',
+        picPath: ''
+      },
+      showPoster: false,
+      canvasimgbg: '',
+      codeImg: '' // 二维码地址
+    }
+
+    computed = {
+    }
+
+    methods = {
+      closeAction() {
+        this.$invoke('actionShow', 'closeAction')
+      },
+      showAction(productId) {
+        this.$invoke('actionShow', 'showAction')
+        this.distProductPrice(productId)
+      },
+      showShare(item) {
+        this.share = item
+        wepy.showLoading({
+          title: '加载中'
+        })
+        this.getWXACode(item)
+      },
+      closePop() {
+        this.showPoster = false
+      }
+    }
+    distProductPrice(productId) {
+      let json = {
+        productId,
+        userLevel: this.level,
+        openId: this.$parent.globalData.openId
+      }
+      XHR.distProductPrice(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            res.data.month = {}
+            let num = 0
+            data.forEach((element, index) => {
+              let key = dayjs(element.productDate).format('YYYY-MM')
+              element.newDate = dayjs(element.productDate).format('MM-DD')
+              let week = Number(dayjs(element.productDate).format('d'))
+              element.week = dayjs(element.productDate).format('d')
+              element.index = index
+  
+              if (!res.data.month[key]) {
+                res.data.month[key] = {}
+              }
+              if (!res.data.month[key][num]) {
+                res.data.month[key][num] = []
+              }
+              if (dayjs(element.productDate).format('YYYY-MM') === key) {
+                if (index === 0) {
+                  if (week === 0) {
+                    res.data.month[key][0].push(element)
+                  } else {
+                    res.data.month[key][0] = ['', '', '', '', '', '', '']
+                    res.data.month[key][0].splice(week++, 1, element)
+                  }
+                } else {
+                  if (week === 0) {
+                    num = num + 1
+                    res.data.month[key][num] = []
+                    res.data.month[key][num][0] = element
+                  } else {
+                    res.data.month[key][num][week] = (element)
+                  }
+                }
+              }
+            })
+            this.times = res.data.month
+            this.$apply()
+          }
+        }
+      })
+    }
+    // 我的分销商一级
+    async distProduct() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        userLevel: this.level,
+        page: this.page,
+        openId: this.$parent.globalData.openId
+      }
+      let res = await XHR.distProduct(json)
+      try {
+        if (res.statusCode === 200) {
+          this.ajaxStatus = true
+          let {result, data} = res.data
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              this.lists = [...this.lists, ...data]
+            } else {
+              this.loading = false
+            }
+            wepy.hideLoading()
+            this.$apply()
+          } else {
+            console.log('接口异常')
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      this.distProduct()
+    }
+    events = {
+    }
+    onShareAppMessage(res) {
+      if (res.from === 'button') {
+        this.showPoster = false
+        this.$apply()
+      }
+      return {
+        title: this.share.productName,
+        imageUrl: `${this.imgUrl}${this.share.picPath}`,
+        path: `/pages/buy-tickets?id=${this.share.productId}&price=${this.share.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
+      }
+    }
+    downImg(item) {
+      wx.downloadFile({
+        url: this.imgUrl + item.picPath,
+        success: (res) => {
+          wepy.hideLoading()
+          this.showPoster = !this.showPoster
+          this.drawImg(item, res.tempFilePath)
+          this.$apply()
+        },
+        fail: function(res) {
+          console.log(res)
+        }
+      })
+    }
+    drawImg(item, img) {
+      this.windowH = 300
+      let context = wx.createCanvasContext('firstCanvas')
+      context.fillStyle = '#fff'
+      context.fillRect(0, 0, this.windowW, 300)
+      context.drawImage(img, 15, 0, this.windowW - 30, 180)
+      context.setFontSize(14)
+      context.setFillStyle('#000')
+      context.fillText(`${item.productName}`, 15, 205)
+      context.setFillStyle('red')
+      context.setFontSize(18)
+      context.fillText(`￥${item.salePrice}`, 15, 235)
+      context.setFillStyle('#000')
+      context.setFontSize(14)
+      context.fillText('长按识别小程序码访问', 15, 265)
+      context.setFontSize(12)
+      context.fillText('亚满票务', 15, 285)
+      context.drawImage(this.codeImg, this.windowW - 75, 235, 60, 60)
+      let that = this
+      context.draw(true, setTimeout(function() {
+        that.daochu()
+      }, 1000))
+    }
+    daochu() {
+      let windowW = this.windowW
+      wx.canvasToTempFilePath({
+        x: 0,
+        y: 0,
+        width: windowW,
+        height: 300,
+        destWidth: windowW * 2,
+        destHeight: 600,
+        canvasId: 'firstCanvas',
+        success: (res) => {
+          this.canvasImg = res.tempFilePath
+          this.$apply()
+        },
+        fail: function(res) {
+          console.log(res, 6)
+        },
+        complete: function(res) {
+          console.log(res, 9)
+        }
+      })
+    }
+    saveImage() {
+      wepy.showLoading({
+        title: '保存中...',
+        mask: true
+      })
+      let imgs = this.canvasImg
+      wx.saveImageToPhotosAlbum({
+        filePath: imgs,
+        success: (res) => {
+          wepy.showToast({
+            title: '保存成功',
+            icon: 'success',
+            duration: 2000
+          })
+          this.showPoster = !this.showPoster
+          this.$apply()
+        },
+        fail(res) {
+          wepy.showToast({
+            title: '保存失败',
+            icon: 'success',
+            duration: 2000
+          })
+        }
+      })
+    }
+    getWXACode(item) {
+      let json = {
+        openId: this.$parent.globalData.openId,
+        distId: this.$parent.globalData.userInfo.companyId2,
+        productId: item.productId,
+        content: `/pages/buy-tickets/buy-tickets?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
+      }
+      XHR.getWXACode(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data, msg} = res.data
+          if (!result) {
+            wx.downloadFile({
+              url: this.imgUrl + data.path,
+              success: (res) => {
+                this.codeImg = res.tempFilePath
+                this.downImg(item)
+                this.$apply()
+              },
+              fail: function(res) {
+                console.log(res)
+              }
+            })
+          } else {
+            this.showToast(msg)
+          }
+        }
+      })
+    }
+    onReady(e) {
+    }
+    async onLoad(option) {
+      if (option.level === '3') {
+        if (option.tapIndex === '0') {
+          this.level = 1
+        } else {
+          this.level = 2
+        }
+      } else {
+        this.level = option.level
+      }
+      this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 45 + 'px'
+      this.windowW = wepy.getSystemInfoSync().windowWidth * 0.8
+      await this.distProduct()
+    }
+  }
+</script>

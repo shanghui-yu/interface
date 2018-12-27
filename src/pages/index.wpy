@@ -1,0 +1,234 @@
+
+<template>
+  <view class="container">
+    <navigator url="/pages/search" hover-class="none" class="search">
+      <view class="search-input">
+        <icon type="search" size="16"/>
+        <input disabled placeholder="请输入关键字搜索产品"/>
+      </view>
+    </navigator>
+    <swiper  class="swiper" autoplay indicator-dots interval="{{interval}}" duration="{{duration}}">
+      <block wx:for="{{imgUrls}}" wx:key="index">
+        <swiper-item wx:if="{{item.img_path}}">
+          <navigator url="/pages/webview?bannerId={{item.id}}" hover-class="none">
+            <image src="{{imgUrl+item.img_path}}" class="slide-image"/>
+          </navigator>
+        </swiper-item>
+      </block>
+    </swiper>
+
+    <!-- 菜单模块 -->
+    <view class="nav-wrap">
+       <repeat for="{{menu}}" key="index" index="index" item="item">
+          <navigator class="nav" url='/pages/type-list?id={{item.id}}&kind_level={{item.kind_level}}'>
+            <image src="{{imgUrl+item.img_path}}" class="icon-image"/>
+            <text class="name">{{item.name}}</text>
+          </navigator>
+      </repeat>
+    </view>
+    <!-- 景点列表 -->
+
+    <view class="project-list"> 
+      <repeat for="{{shopList}}" key="index" index="index" item="item">
+        <projectitem :item.sync="item"></projectitem>
+      </repeat>
+      <view class="data-none" wx:if="{{!shopList.length&&ajaxStatus}}">
+        <image class="img" src="../images/auto.png" />
+        <view>暂无查询数据</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import XHR from '../api/'
+  import projectItem from '../components/project-item'
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '亚满票务'
+    }
+    components = {
+      toast: Toast,
+      projectitem: projectItem
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      loading: true,
+      imgUrls: [],
+      menu: [],
+      shopList: [],
+      page: 1,
+      openId: '',
+      ajaxStatus: false,
+      autoplay: false,
+      interval: 3000,
+      duration: 1000
+    }
+
+    computed = {
+    }
+
+    methods = {
+    }
+    events = {
+    }
+    async getBanner() {
+      let res = await XHR.getBanner()
+      try {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            this.imgUrls = data
+            this.$apply()
+          }
+        } else {
+          console.log('接口异常')
+        }
+      } catch (error) {}
+    }
+    async getCategory() {
+      let res = await XHR.getCategory()
+      try {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            this.menu = data
+            this.$apply()
+          }
+        } else {
+          console.log('接口异常')
+        }
+      } catch (error) {}
+    }
+    async getShopList() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        kindId: 0,
+        level_kind: 1,
+        order: 0,
+        page: this.page
+      }
+      let res = await XHR.getShopList(json)
+      try {
+        if (res.statusCode === 200) {
+          this.ajaxStatus = true
+          let {result, data} = res.data
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              this.shopList = [...this.shopList, ...data]
+            } else {
+              this.loading = false
+            }
+            wepy.hideLoading()
+            this.$apply()
+          } else {
+            console.log('接口异常')
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    async onLoad() {
+      await this.getBanner()
+      await this.getCategory()
+      await this.getShopList()
+      if (this.$parent.globalData.openId) {
+        this.userDistribution()
+      }
+      // wepy.navigateTo({
+      //   url: `/pages/addPhone`
+      // })
+    }
+    userDistribution() {
+      try {
+        let distId = wepy.getStorageSync('distId')
+        let json = {
+          openId: this.$parent.globalData.openId,
+          distId: distId
+        }
+        XHR.userDistribution(json).then(res => {
+          console.log(res.data)
+        })
+      } catch (error) {
+      }
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      this.getShopList()
+    }
+  }
+</script>
+<style lang="less" scoped>
+.search{
+  padding: 20rpx 32rpx;
+  display: flex;
+  .search-input{
+    flex: 1;
+    border:1rpx solid #eee;
+    display: flex;
+    height: 80rpx;
+    align-items: center;
+    padding: 20rpx;
+    box-sizing: border-box;
+    border-radius: 4px;
+    icon{
+      display: inline-block;
+      margin-right: 10rpx;
+    }
+  }
+  input{
+    line-height: 48rpx;
+    flex: 1;
+    font-size: 24rpx;
+  }
+  .search-ok{
+    height: 80rpx;
+    margin-left:10rpx;
+  }
+}
+.swiper{
+  width: 100%;
+  height: 150px;
+  image{
+    width: 100%;
+    height: 150px;
+  }
+}
+.nav-wrap{
+  padding: 20rpx 0;
+  box-sizing: border-box;
+  .nav{
+    width: 25%;
+    float: left;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+    align-items: center;
+    font-size: 24rpx;
+    margin-bottom: 20rpx;
+    .icon-image{
+      width: 80rpx;
+      height: 80rpx;
+      margin-bottom: 10rpx;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+  }
+}
+.project-list{
+  clear: both;
+  border-top: 20rpx solid #ebebeb;
+}
+</style>

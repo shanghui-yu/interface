@@ -1,0 +1,150 @@
+
+<template>
+  <view class="container">
+    <view>
+      <input placeholder="这是一个可以自动聚焦的input" auto-focus/>
+    </view>
+    <swiper  class="swiper" autoplay indicator-dots interval="{{interval}}" duration="{{duration}}">
+      <block wx:for="{{imgUrls}}" wx:key="index">
+        <swiper-item>
+          <image src="{{item}}" class="slide-image"/>
+        </swiper-item>
+      </block>
+    </swiper>
+
+    <!-- 菜单模块 -->
+    <view class="nav-wrap">
+      <navigator class="nav">
+         <image src="{{imgUrls[0]}}" class="icon-image"/>
+         <text class="name">游戏观光</text>
+      </navigator>
+      <navigator class="nav">
+        <image src="{{imgUrls[1]}}" class="icon-image"/>
+         <text class="name">游泳戏水</text>
+      </navigator>
+     <navigator class="nav">
+         <image src="{{imgUrls[0]}}" class="icon-image"/>
+         <text class="name">汗蒸温泉</text>
+      </navigator>
+     <navigator class="nav">
+         <image src="{{imgUrls[0]}}" class="icon-image"/>
+         <text class="name">滑雪溜冰</text>
+      </navigator>
+      <navigator class="nav">
+         <image src="{{imgUrls[0]}}" class="icon-image"/>
+         <text class="name">滑雪溜冰</text>
+      </navigator>
+      <navigator class="nav">
+         <image src="{{imgUrls[0]}}" class="icon-image"/>
+         <text class="name">滑雪溜冰</text>
+      </navigator>
+    </view>
+    <!-- 景点列表 -->
+
+    <view class="project-list"> 
+      <view class="project-item">
+          <image src="{{imgUrls[0]}}" />
+          <view class="content">
+            <view class="name"></view>
+            <view class="tips">
+              <text>随定随用</text>
+              <text>随时退</text>
+            </view>
+            <view class="footer">
+              <view>
+                <text>￥20起</text>月售1000
+              </view>
+              <text>东城区/北京</text>
+            </view>
+          </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  @connect({
+    num (state) {
+      return state.counter.num
+    },
+    asyncNum (state) {
+      return state.counter.asyncNum
+    },
+    sumNum (state) {
+      return state.counter.num + state.counter.asyncNum
+    }
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: 'test',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      imgUrls: [
+        'http://img02.tooopen.com/images/20150928/tooopen_sy_143912755726.jpg',
+        'http://img06.tooopen.com/images/20160818/tooopen_sy_175866434296.jpg',
+        'http://img06.tooopen.com/images/20160818/tooopen_sy_175833047715.jpg'
+      ],
+      autoplay: false,
+      interval: 3000,
+      duration: 1000
+    }
+
+    computed = {
+    }
+
+    methods = {
+    }
+
+    events = {
+    }
+
+    onLoad() {
+      // wepy.switchTab({
+      //   url: '/pages/me'
+      // })
+    }
+  }
+</script>
+<style lang="less" scoped>
+.swiper{
+  width: 100%;
+  height: 320rpx;
+  border-bottom: 20rpx solid #ebebeb;
+  image{
+    width: 100%;
+  }
+}
+.nav-wrap{
+  padding: 20rpx 0;
+  box-sizing: border-box;
+  .nav{
+    width: 25%;
+    float: left;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+    align-items: center;
+    font-size: 24rpx;
+    height: 100rpx;
+    margin-bottom: 20rpx;
+    .icon-image{
+      width: 80rpx;
+      height: 80rpx;
+      border-radius: 50%;
+    }
+  }
+}
+</style>

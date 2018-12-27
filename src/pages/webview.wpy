@@ -1,0 +1,61 @@
+<template>
+  <view class="container">
+    <import src="../wxParse/wxParse.wxml"/>
+    <template is="wxParse" data="{{wxParseData:BannerDetail.nodes}}"></template>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import XHR from '../api'
+  import testMixin from '../mixins/test'
+  var WxParse = require('../wxParse/wxParse.js')
+  export default class webview extends wepy.page {
+    config = {
+      navigationBarTitleText: ''
+    }
+    mixins = [testMixin]
+    components = {
+    }
+
+    data = {
+      url: '',
+      replaceStr: { // 过滤规则 方便以后添加写了一个对象，新加过滤规则的话 在这里面添加就行
+        'alt=.+?(?=\\/>)': ''
+      }
+    }
+
+    computed = {
+    }
+    getBannerDetail (bannerId) {
+      let json = {
+        bannerId
+      }
+      XHR.getBannerDetail(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            let BannerDetail = data.content
+            this.replaceKeyWord(BannerDetail, this.replaceStr)
+            WxParse.wxParse('BannerDetail', 'html', BannerDetail, this, 0)
+          }
+        }
+      })
+    }
+    methods = {
+    }
+
+    events = {
+    }
+  
+    onLoad(option) {
+      this.getBannerDetail(option.bannerId)
+    }
+  }
+</script>
+<style lang="less" scoped>
+  @import "../wxParse/wxParse.wxss";
+  .container{
+    padding: 0 15px;
+  }
+</style>

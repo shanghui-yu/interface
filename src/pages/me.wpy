@@ -1,0 +1,249 @@
+<style lang="less">
+  .user-info{
+    padding:100rpx auto 40rpx;
+    box-sizing: border-box;
+    text-align: center;
+    .avatar{
+      border-radius: 50%;
+      width: 160rpx;
+      height: 160rpx;
+      margin: 0 0 20rpx 0;
+    }
+    .content{
+      font-size: 28rpx;
+      color: #333;
+      .level-warp{
+        display: inline-block;
+      }
+      .level{
+        padding: 4rpx 10rpx;
+        border:1px solid #0a8df1;
+        color: #0a8df1;
+        border-radius: 8rpx;
+        height:24rpx;
+        display:inline-block;
+        line-height:24rpx;
+        margin-left: 10rpx;
+      }
+    }
+  }
+  .menu-list{
+    background: #fff;
+    .item{
+      position: relative;
+      padding: 20rpx 32rpx;
+      line-height: 48rpx;
+      font-size: 24rpx;
+      display: flex;
+      justify-content:space-between;
+      &::before{
+        content:'';
+        position: absolute;
+        left: 32rpx;
+        bottom: 0;
+        right: 0;
+        height: 1px;
+        border-bottom: 1px solid #D9D9D9;
+        color: #D9D9D9;
+        -webkit-transform-origin: 0 100%;
+        transform-origin: 0 100%;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+      }
+      &::after{
+        display: block;
+        width: 88rpx;
+        font-family: 'tour';
+        content:'\e769';
+        text-align: right;
+      }
+      .my-order::before{
+        font-family: 'tour';
+        content:'\e6bd';
+        color: #1296db;
+        margin-right: 10rpx;
+      }
+      .my-editPhone::before{
+        font-family: 'tour';
+        content:'\e67f';
+        margin-right: 10rpx;
+      }
+      .my-money::before{
+        font-family: 'tour';
+        content:'\e615';
+        color:#00a2ff;
+        margin-right: 10rpx;
+      }
+      .my-dealer::before{
+        font-family: 'tour';
+        content:'\e619';
+        color: #d93118;
+        margin-right: 10rpx;
+      }
+      .my-people::before{
+        font-family: 'tour';
+        content:'\e614';
+        color: #1afa29;
+        margin-right: 10rpx;
+      }
+      .my-product::before{
+        font-family: 'tour';
+        content:'\e617';
+        color: #1afa29;
+        margin-right: 10rpx;
+      }
+    }
+  }
+  .tel{
+    margin:120rpx auto 0;
+    text-align: center;
+    &::before{
+       font-family: 'tour';
+      content:'\e658';
+      color: #2d85b4;
+      margin-right: 10rpx;
+    }
+  }
+  .switch{
+    position: relative;
+    display: inline-block;
+     width: 40rpx;
+    .arrow{
+      text-align: center;
+      &::after{
+        content: '\e769';
+        transform: rotate(180deg)
+      }
+    }
+  }
+</style>
+<template>
+  <view class="container">
+    <view class="user-info">
+      <image class="avatar" src="{{userinfo.avatarUrl}}" />
+      <view class="content">
+        <text>{{userinfo.nickName||userinfo.nikeName}}</text>
+        <view class="level-warp" wx:if="{{userinfo.userLevel1}}">
+          <text class="level" wx:if="{{level==1}}">一级</text>
+          <text class="level" wx:if="{{level==2}}">二级</text>
+          <text class="level" wx:if="{{level==3}}">{{tapIndex==0?"一级":"二级"}}</text>
+          <view class="switch" @tap="showLabel" wx:if="{{level==3}}">
+            <text class="icon arrow"></text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="menu-list">
+      <navigator class="item" url="/pages/my-order" hover-class="none">
+        <view class="my-order">我的订单</view>
+      </navigator>
+      <navigator class="item" url="/pages/editPhone" hover-class="none" wx:if="{{userinfo.mobile}}">
+        <view class="my-editPhone">修改手机号{{userinfo.mobile}}</view>
+      </navigator>
+      <navigator class="item" wx:if="{{level!=0}}" url="/pages/put-forward?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
+        <view class="my-money">我要提现</view>
+      </navigator>
+      <navigator class="item" wx:if="{{level==1||(tapIndex==0&&level==3)}}" url="/pages/my-dealer?type=1" hover-class="none">
+        <view class="my-dealer">我的经销商</view>
+      </navigator>
+      <navigator class="item" wx:if="{{level==2||tapIndex==1}}" url="/pages/my-dealer?type=2" hover-class="none">
+        <view class="my-dealer">我的下级</view>
+      </navigator>
+      <navigator class="item" wx:if="{{level!=0}}" url="/pages/share-product?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
+        <view class="my-product">我的分销产品</view>
+      </navigator>
+    </view>
+
+    <view class="tel" @tap="call('13164202147')">13164202147</view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+  @connect({
+    num (state) {
+      return state.counter.num
+    },
+    asyncNum (state) {
+      return state.counter.asyncNum
+    },
+    sumNum (state) {
+      return state.counter.num + state.counter.asyncNum
+    }
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+    mixins = [testMixin]
+
+    data = {
+      level: 0,
+      tapIndex: 0,
+      userinfo: {}
+    }
+
+    computed = {
+    }
+
+    methods = {
+      call (tel) {
+        wepy.makePhoneCall({
+          phoneNumber: tel // 仅为示例，并非真实的电话号码
+        })
+      },
+      showLabel() {
+        wepy.showActionSheet({
+          itemList: ['等级一', '等级二'],
+          itemColor: '#2d85b4'
+        }).then(res => {
+          this.tapIndex = res.tapIndex
+          this.$apply()
+        })
+      }
+    }
+
+    events = {
+    }
+    onShow() {
+    }
+    onLoad() {
+      try {
+        let userinfo = wepy.getStorageSync('userinfo')
+        let phone = wepy.getStorageSync('phone')
+        if (userinfo && userinfo.userLevel1) {
+          if ((userinfo.userLevel1 !== '' && userinfo.userLevel2 === '')) {
+            this.level = 1
+          } else if (userinfo.userLevel1 === '' && userinfo.userLevel2 !== '') {
+            this.level = 2
+          } else if (userinfo.userLevel1 !== '' && userinfo.userLevel2 !== '') {
+            this.level = 3
+          }
+        }
+        if (!userinfo.avatarUrl) {
+          wepy.redirectTo({
+            url: '/pages/authorization?type=me'
+          })
+        } else if (phone === '') {
+          wepy.redirectTo({
+            url: `/pages/addPhone?type=me`
+          })
+        } else {
+          this.userinfo = userinfo
+          this.$apply()
+        }
+      } catch (error) {}
+    }
+  }
+</script>

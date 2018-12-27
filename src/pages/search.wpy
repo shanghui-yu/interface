@@ -1,0 +1,132 @@
+
+<template>
+  <view class="container">
+    <view class="search">
+      <view class="search-input">
+        <icon type="search" size="16"/>
+        <input focus placeholder="请输入关键字搜索产品" @input="seachShop"/>
+      </view>
+      <button class="search-ok" @tap="toSearch" type="primary">确定</button>
+    </view>
+
+    <!-- 景点列表 -->
+    <view class="project-list"> 
+      <repeat for="{{shopList}}" key="index" index="index" item="item">
+        <projectitem :item.sync="item"></projectitem>
+      </repeat>
+      <view class="data-none" wx:if="{{!shopList.length&&ajaxStatus}}">
+        <image class="img" src="../images/auto.png" />
+        <view>暂无查询数据</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import testMixin from '../mixins/test'
+  import XHR from '../api/'
+  import projectItem from '../components/project-item'
+
+  export default class Search extends wepy.page {
+    config = {
+      navigationBarTitleText: '搜索'
+    }
+    components = {
+      projectitem: projectItem
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      loading: true,
+      shopList: [],
+      searchPage: 1,
+      ajaxStatus: false
+    }
+
+    computed = {
+    }
+
+    methods = {
+      seachShop(e) {
+        this.searchValue = e.detail.value
+        this.$apply()
+      }
+    }
+    toSearch() {
+      wepy.showLoading({
+        title: '搜索中'
+      })
+      let json = {
+        key: this.searchValue,
+        page: this.searchPage
+      }
+      XHR.seachShop(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          this.ajaxStatus = true
+          if (!result) {
+            if (!data.length) {
+              this.loading = false
+            } else {
+              this.shopList = [...this.shopList, ...data]
+              this.searchPage++
+              this.loading = true
+            }
+            wepy.hideLoading()
+            this.$apply()
+          } else {
+            console.log('接口异常')
+          }
+        }
+      })
+    }
+    events = {
+    }
+  
+    onLoad() {
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      this.toSearch()
+    }
+  }
+</script>
+<style lang="less" scoped>
+.search{
+  padding: 20rpx 32rpx;
+  display: flex;
+  .search-input{
+    flex: 1;
+    border:1rpx solid #eee;
+    display: flex;
+    height: 80rpx;
+    align-items: center;
+    padding: 20rpx;
+    box-sizing: border-box;
+    border-radius: 4px;
+    icon{
+      display: inline-block;
+      margin-right: 10rpx;
+    }
+  }
+  input{
+    line-height: 48rpx;
+    flex: 1;
+    font-size: 24rpx;
+  }
+  .search-ok{
+    height: 80rpx;
+    margin-left:10rpx;
+    line-height: 80rpx;
+  }
+}
+.project-list{
+  clear: both;
+  border-top: 20rpx solid #ebebeb;
+}
+</style>

@@ -1,0 +1,370 @@
+
+<template>
+  <view class="container">
+    <!-- 状态 -->
+    <view class="top">
+      <view class="main">
+        <text class="title">{{orderDetai.status}}</text>
+        <text>{{statusDes}}</text>
+      </view>
+      <view class="price">{{orderDetai.totalMoney}}</view>
+    </view>
+
+    <!-- 产品信息 -->
+    <view class="list">
+      <text class="title">产品信息</text>
+      <view class="item tips">{{orderDetai.productName}}</view>
+      <view class="item"><text class="lable">出行日期：</text>{{orderDetai.playDate}}</view>
+      <view class="item"><text class="lable">门票：</text>￥{{orderDetai.totalMoney}} x {{orderDetai.totalNum}}</view>
+    </view>
+    
+     <!-- 出行人信息 -->
+    <view class="list flex" wx:if="{{orderDetai.playUser.length}}">
+      <view class="content">
+        <text class="title">出行人信息</text>
+        <text class="item" wx:for="{{orderDetai.playUser}}" wx:key="{{index}}">{{item.playUserName +'：'+ item.playUserCard}}</text>
+      </view>
+      <!-- <view class="look-more" @tap="showAchtion">查看详情</view> -->
+    </view>
+
+     <!-- 预订人信息 -->
+    <view class="list">
+      <text class="title">预订人信息</text>
+      <view class="item"><text class="lable">联系人：</text>{{orderDetai.orderUser}}</view>
+      <view class="item"><text class="lable">手机号：</text>{{orderDetai.orderUserMobile}}</view>
+    </view>
+
+    <!-- 订单信息 -->
+    <view class="list flex">
+      <view class="content">
+        <text class="title">订单信息</text>
+        <view class="item"><text class="lable">订单号：</text>{{orderDetai.orderNum}}</view>
+        <view class="item"><text class="lable">下单时间：</text>{{orderDetai.addTime}}</view>
+      </view>
+      <view class="price">￥{{orderDetai.totalMoney}}</view>
+    </view>
+
+    <!-- 退款记录 -->
+    <view class="list" wx:if="{{orderDetai.returnList.length}}">
+      <text class="title">退款记录</text>
+      <block wx:for="{{orderDetai.returnList}}" wx:key="{{index}}">
+        <view @tap="toRefund({{item}})" class="item"><text class="lable">{{item.applyTime}}</text>{{item.refundStatus}}</view>
+      </block>
+    </view>
+
+    <!-- 联系商家 -->
+    <view class="footer">
+      <button plain hover-class="none" @tap="toShoper">联系商家</button>
+      <button plain hover-class="none" wx:if="{{(orderDetai.status!='待支付' && orderDetai.status!='作废')&&orderDetai.returnStatus=='正常'|| (orderDetai.status!='待支付' && orderDetai.status!='作废') && orderDetai.returnStatus=='部分退'}}" @tap="refund">申请退款</button>
+      <button plain hover-class="none" wx:if="{{orderDetai.status=='待支付'}}" @tap="toBuyOrder({{orderDetai.id}})">去支付</button>
+    </view>
+
+    <!-- <actionShow>
+        <view slot="title" class="actionShow-top">
+          <view class="content">
+            <text class="title">全天场门票</text>
+          </view>
+          <view class="close" @tap="closeAction"></view>
+        </view>
+        <view slot="content">
+          <scroll-view scroll-y  style="height:{{height}}"  class="actionShow-content">
+            <repeat for="{{people}}" key="index" index="index" item="item">
+              <orderPeopleList :item="item" :index="index"></orderPeopleList>
+            </repeat>
+          </scroll-view>
+        </view>
+        <view slot="footer" class="action-footer">
+          <button plain>确定</button>
+        </view>
+    </actionShow> -->
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import orderPeopleList from '../components/order-people-list'
+  import ActionShow from '../components/actionShow'
+  import XHR from '../api/index.js'
+  import USER from '../api/my.js'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '订单详情',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast,
+      actionShow: ActionShow,
+      orderPeopleList: orderPeopleList
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      height: 400,
+      orderDetai: {},
+      statusDes: '',
+      people: [
+        {
+          name: '王小二',
+          cardId: '412825199006186181',
+          tel: '13269511817'
+        }
+      ]
+    }
+
+    computed = {
+    }
+
+    methods = {
+      toShoper() {
+        wepy.makePhoneCall({
+          phoneNumber: '13164202147'
+        })
+      },
+      refund() {
+        wepy.navigateTo({
+          url: `/pages/refund?num=${this.orderDetai.totalNum}&orderId=${this.orderId}`
+        })
+      },
+      showAchtion() {
+        this.$invoke('actionShow', 'showAction')
+      },
+      closeAction() {
+        this.$invoke('actionShow', 'closeAction')
+      },
+      toRefund(item) {
+        switch (item.refundStatus) {
+          case '待退款':
+            wepy.navigateTo({
+              url: `/pages/refund2?status=${item.refundStatus}&orderId=${this.orderId}&returnId=${item.id}`
+            })
+            break
+          case '已退款':
+          case '退款失败':
+          case '取消退款':
+            wepy.navigateTo({
+              url: `/pages/refund3?status=${item.refundStatus}&orderId=${this.orderId}&returnId=${item.id}`
+            })
+            break
+        }
+      }
+    }
+    getOrderDetail() {
+      let json = {
+        orderId: this.orderId,
+        openId: this.$parent.globalData.openId
+      }
+      USER.myOrderDetail(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            this.orderDetai = data
+  
+            switch (data.status) {
+              case '待支付':
+                this.statusDes = '请尽快支付，来完成本次交易！'
+                break
+              case '已支付':
+                this.statusDes = '支付完成，请尽快安排出行！'
+                break
+              case '已出票':
+                this.statusDes = '交易完成，期待你的下次出现！'
+                break
+              default:
+                break
+            }
+            this.$apply()
+          }
+        }
+      })
+    }
+    toBuyOrder(id) {
+      let json = {
+        openId: this.submit.openId,
+        id
+      }
+      XHR.payment(json).then(res => {
+        if (res.statusCode === 200) {
+          let {data, result} = res.data
+          if (!result) {
+            wx.requestPayment({
+              timeStamp: data.timeStamp,
+              nonceStr: data.nonceStr,
+              package: data.package,
+              signType: data.signType,
+              paySign: data.paySign,
+              success: (res) => {
+                this.showToast('支付成功', function() {
+                  setTimeout(() => {
+                    wepy.switchTab({
+                      url: '/pages/me'
+                    })
+                  }, 2e3)
+                })
+              },
+              fail (res) { }
+            })
+          }
+        }
+      })
+    }
+    events = {
+    }
+
+    onLoad(option) {
+      this.orderId = option.orderId
+      this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 110 + 'px'
+      this.getOrderDetail()
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .top{
+    background: #f5f5f5;
+    padding: 20rpx 32rpx;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .main{
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      color: #666666;
+      font-size: 28rpx;
+    }
+  }
+  .price{
+    color: #e94d2e;
+    font-size: 40rpx;
+  }
+  .look-more{
+     color: #5682cd;
+    font-size: 32rpx;
+  }
+  .title{
+    color: #000;
+    line-height: 110rpx;
+    font-size: 40rpx;
+  }
+  .list{
+    padding: 20rpx 32rpx;
+    border-bottom: 20rpx solid #f5f5f5;
+    font-size: 24rpx;
+    &.flex{
+      display: flex;
+      justify-content:space-between;
+      align-items: center;
+    }
+    .content{
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .item{
+      line-height: 60rpx;
+      height: 60rpx;
+      .lable{
+        width: 140rpx;
+        font-size: 28rpx;
+      }
+    }
+    .tips text{
+      font-size: 30rpx;
+      margin-right: 10rpx;
+    }
+  }
+  .container{
+    padding-bottom: 100rpx;
+    box-sizing: border-box;
+    height:initial;
+  }
+ .footer{
+   position: fixed;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   height: 100rpx;
+   padding: 0 32rpx;
+   box-sizing: border-box;
+   box-shadow: 0px 1px 1px 1px rgba(0,0,0,0.20);
+   display: flex;
+   justify-content:flex-end;
+   align-items: center;
+   background: #fff;
+   z-index: 100;
+   button{
+     height: 70rpx;
+     border:1px solid #e6e6e6;
+     margin:0 5px;
+    font-size: 24rpx;
+    line-height: 70rpx;
+   }
+}
+.actionShow-top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  height: 60px;
+  box-sizing: border-box;
+  position: relative;
+  &::after{
+    content:'';
+    position: absolute;
+    left:0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid #D9D9D9;
+    color: #D9D9D9;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+  }
+  .content{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    color: #666;
+    .title{
+      font-size: 40rpx;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+  .close{
+    width: 60rpx;
+    height: 60rpx;
+    text-align: center;
+    line-height: 60rpx;
+    &::after{
+      font-family: 'tour';
+      content:'\e608';
+      font-size: 40rpx;
+    }
+  }
+}
+.actionShow-content{
+}
+.action-footer{
+  height: 50px;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #f5f5f5;
+  padding: 0 32rpx;
+  button{
+    background: #ffe143;
+    color: #333;
+    font-size: 28rpx;
+    text-align: center;
+    border:none;
+    width: 100%;
+  }
+}
+</style>

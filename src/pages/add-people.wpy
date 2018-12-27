@@ -1,0 +1,151 @@
+
+<template>
+  <view class="container">
+    <view class="info-list">
+       <view class="item">
+        <text class="label">中文姓名</text>
+         <input placeholder="请输入中文姓名" value="{{name}}" @input="changeName" />
+       </view>
+       <view class="item">
+         <text class="label">身份证号</text>
+         <input placeholder="请输入身份证号" value="{{cardNo}}"  @input="changeCard" />
+       </view>
+       <!-- <view class="item">
+         <text class="label">联系电话</text>
+         <input placeholder="请输入电话号码"/>
+       </view> -->
+    </view>
+    <button class="submit" disabled="{{disabled}}" hover-class="none" @tap="isOk">确认</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+
+  export default class addPeople extends wepy.page {
+    config = {
+      navigationBarBackgroundColor: '#ffe048',
+      navigationBarTitleText: '添加联系人',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      name: '',
+      cardNo: '',
+      index: 0,
+      type: '',
+      disabled: true
+    }
+
+    computed = {
+    }
+
+    methods = {
+      changeName(e) {
+        this.name = e.detail.value
+        if (this.name !== '' && this.cardNo !== '') {
+          this.disabled = false
+        }
+      },
+      changeCard(e) {
+        this.cardNo = e.detail.value
+        if (this.name !== '' && this.cardNo !== '') {
+          this.disabled = false
+        }
+      }
+    }
+    isOk() {
+      if (this.regName(this.name) && this.regCard(this.cardNo)) {
+        let json = {
+          name: this.name,
+          cardNo: this.cardNo,
+          check: false
+        }
+        try {
+          let Contacts = wepy.getStorageSync('Contacts')
+          if (Contacts) {
+            let isRepeat = Contacts.some((item) => {
+              return item.cardNo === json.cardNo
+            })
+            if (isRepeat && this.type !== 'edit') {
+              this.showToast('请不要添加重复的身份证')
+            } else {
+              this.addOk(Contacts, json)
+            }
+          } else {
+            Contacts = []
+            this.addOk(Contacts, json)
+          }
+        } catch (error) {}
+      } else {
+        this.disabled = true
+        this.$apply()
+      }
+    }
+    addOk(Contacts, json) {
+      if (this.type === 'edit') {
+        Contacts[this.index] = json
+      } else {
+        Contacts.push(json)
+      }
+      wepy.setStorageSync('Contacts', Contacts)
+      this.showToast('添加成功')
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+    events = {
+    }
+
+    onLoad(option) {
+      if (option.type && option.type === 'edit') {
+        this.name = option.name
+        this.cardNo = option.cardNo
+        this.index = option.index
+        this.type = 'edit'
+        this.disabled = false
+        this.$apply()
+      }
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .info-list{
+  padding: 0 32rpx;
+  .item{
+    line-height: 88rpx;
+    height: 88rpx;
+    display: flex;
+    justify-content: space-between;
+    font-size: 28rpx;
+    align-items: center;
+    .label{
+      width: 160rpx;
+    }
+    input{
+      flex:1;
+      line-height: 88rpx;
+      height: 88rpx;
+      display: flex;
+    }
+  }
+}
+.submit{
+  position: fixed;
+  bottom: 10px;
+  left: 32rpx;
+  right: 32rpx;
+  background: rgba(254, 220, 35, 1);
+}
+button[disabled]{
+  background: rgba(254, 220, 35, 0.5) !important;
+}
+</style>

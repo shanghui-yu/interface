@@ -1,0 +1,164 @@
+
+<template>
+  <view class="container">
+    <block wx:for="{{orderList}}" wx:key="{{index}}">
+      <navigator url="/pages/order-detail?orderId={{item.orderId}}" hover-class="none" class="order-item">
+          <view class="header">
+            <text>订单编号：{{item.orderNum}}</text>
+            <text class="status">{{item.status}}</text>
+          </view>
+          <view class="content">
+            <view class="top">
+              <text>{{item.productName}}</text>
+              <text class="num">数量：{{item.totalNum}}</text>
+            </view>
+            <view class="time">出行日期：{{item.playDate}}<text class="price">￥{{item.totalMoney}}</text></view>
+            <view class="time">下单时间：{{item.addTime}}</view>
+          </view>
+          <!-- <view class="footer">
+            <text>门票</text>
+            <navigator url="/pages/order-detail?orderId={{item.orderId}}" hover-class="none">查看订单</navigator>
+          </view> -->
+      </navigator>
+    </block>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { connect } from 'wepy-redux'
+  import USER from '../api/my.js'
+  import testMixin from '../mixins/test'
+  @connect({
+    num (state) {
+      return state.counter.num
+    },
+    asyncNum (state) {
+      return state.counter.asyncNum
+    },
+    sumNum (state) {
+      return state.counter.num + state.counter.asyncNum
+    }
+  })
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的订单',
+      usingComponents: {
+      }
+    }
+    components = {
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      page: 1,
+      openId: '',
+      loading: true,
+      orderList: []
+    }
+
+    computed = {
+    }
+
+    methods = {
+    }
+    getOrderList() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        page: this.page,
+        openId: this.openId
+      }
+      USER.myOrder(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            if (data && data.length) {
+              this.loading = true
+              this.page++
+              this.orderList = [...this.orderList, ...data]
+            } else {
+              this.loading = false
+            }
+            wepy.hideLoading()
+            this.$apply()
+          }
+        }
+      })
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      this.getOrderList()
+    }
+    events = {
+    }
+
+    onLoad() {
+      this.openId = this.$parent.globalData.openId
+      this.getOrderList()
+    }
+  }
+</script>
+<style lang="less" scoped>
+  .order-item{
+    position: relative;
+    &::after{
+      content:'';
+      position: absolute;
+      left:0;
+      bottom: 0;
+      right: 0;
+      height: 1px;
+      border-bottom: 1px solid #D9D9D9;
+      color: #D9D9D9;
+      -webkit-transform-origin: 0 100%;
+      transform-origin: 0 100%;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+    .header{
+      margin-top: 1px;
+      font-size: 32rpx;
+    }
+    .header,.footer{
+      padding: 0 32rpx;
+      height: 80rpx;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #656464;
+      background: #eee;
+    }
+    .content{
+      padding: 20rpx 32rpx;
+      display: flex;
+      justify-content: center;
+      font-size: 24rpx;
+      flex-direction: column;
+      color: #000;
+      text-align: justify;
+      .time{
+        text-align: left;
+        margin-top: 10rpx;
+        display: flex;
+        justify-content: space-between;
+      }
+      .num{
+          color: #656464;
+        }
+      .top{
+        display: flex;
+        justify-content: space-between;
+      }
+      .price{
+        color: #f80a0a
+      }
+    }
+  }
+</style>

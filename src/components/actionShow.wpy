@@ -1,0 +1,85 @@
+<style lang="less" scoped>
+.mask{
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0);
+}
+.panel{
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  -webkit-transform: translate(0, 100%);
+  transform: translate(0, 100%);
+  backface-visibility: hidden;
+  z-index: 5000;
+  width: 100%;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background-color: #fff;
+  transition: -webkit-transform .3s;
+  transition: transform .3s;
+  overflow: hidden;
+  .main{
+    display: flex;
+    flex-direction: column;
+  }
+}
+.actionSheet{
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  top:0;
+  right:0;
+  .panel{
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+  }
+  .mask{
+    display: block;
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+</style>
+<template>
+ <view class="{{showSheet}}">
+  <view class="mask"></view>
+  <view class="panel" style="top:{{top}}%">
+    <slot name="title"></slot>
+    <slot name="content"></slot>
+    <slot name="footer"></slot>
+  </view>
+ </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class actionShow extends wepy.component {
+    props = {
+      top: {
+        type: String,
+        default: '20'
+      }
+    }
+    methods = {
+      showAction(item) {
+        this.showSheet = 'actionSheet'
+        this.$emit('showRule', item)
+        this.$apply()
+      },
+      closeAction() {
+        this.showSheet = ''
+        this.$apply()
+      }
+    }
+  
+    data = {
+      showSheet: ''
+    }
+    onLoad() {
+    }
+  }
+</script>

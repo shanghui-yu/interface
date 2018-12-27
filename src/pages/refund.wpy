@@ -1,0 +1,215 @@
+
+<template>
+  <view class="container">
+    <!-- 进度 -->
+    <progress index="1"></progress>
+    <!-- 退款原因 -->
+    <!-- <view class="refund-cause">
+      <text class="tip {{action==index?'select':''}}" wx:for="{{tips}}" wx:key="index" @tap="selectTip({{index}})">{{item}}</text>
+    </view> -->
+    <!-- 退款人数 -->
+    <view class="refund-people">
+      <view class="list">
+        <text class="title">票数：</text>
+        <view class="content">
+          <view class="btn reduce"  @tap="reduce"></view>
+           <text class="num">{{submit.num}}/{{allNum}}</text>
+          <view class="btn add" @tap="add"></view>
+        </view>
+        
+      </view>
+    </view>
+    <!-- 退款说明 -->
+    <view class="refund-des">
+      <text class="title">退款说明：</text>
+      <textarea show-confirm-bar auto-height placeholder="请输入退款原因" @input="changeTips" />
+    </view>
+    <button class="submit"  @tap="applyOrder" hover-class="none">确认</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import testMixin from '../mixins/test'
+  import Progress from '../components/progress'
+  import XHR from '../api/my.js'
+  export default class refund extends wepy.page {
+    config = {
+      navigationBarTitleText: '退款申请',
+      usingComponents: {
+      }
+    }
+    components = {
+      progress: Progress
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      disabled: true,
+      action: 0,
+      tips: ['出行人信息填错', '出行时间变更', '数量拍错了', '因临时有事，无法参与', '商家确认无库存', '其他原因'],
+      allNum: 1,
+      submit: {
+        orderId: '',
+        openId: '',
+        num: 1,
+        note: ''
+      }
+    }
+
+    computed = {
+    }
+
+    methods = {
+      changeTips(e) {
+        this.submit.note = e.detail.value
+        if (e.detail.value !== '') {
+          this.disabled = false
+        } else {
+          this.disabled = true
+        }
+      },
+      selectTip(index) {
+        this.action = index
+      },
+      add() {
+        if (this.submit.num < this.allNum) {
+          this.submit.num++
+        } else {
+          this.showToast(`退款票数不能超过${this.allNum}`)
+        }
+      },
+      reduce() {
+        if (this.submit.num > this.allNum) {
+          this.submit.num--
+        } else {
+          this.showToast(`退款票数不能少于${this.allNum}`)
+        }
+      }
+    }
+    applyOrder() {
+      XHR.applyOrder(this.submit).then(res => {
+        if (res.statusCode === 200) {
+          let {result, msg} = res.data
+          if (!result) {
+            wepy.navigateTo({
+              url: `/pages/refund2`
+            })
+          } else {
+            this.showToast(msg)
+          }
+        }
+      })
+    }
+  
+    events = {
+    }
+
+    onLoad(option) {
+      console.log(option)
+  
+      this.allNum = option.num
+      this.submit.orderId = option.orderId
+      this.submit.openId = this.$parent.globalData.openId
+    }
+  }
+</script>
+<style lang="less" scoped>
+.refund-cause{
+  padding: 0 32rpx;
+  .title{
+    font-size: 32rpx;
+    height: 80rpx;
+    display: flex;
+    align-items: center;
+    color: #aaaaaa;
+  }
+  .tip{
+    padding: 8rpx 10rpx;
+    border:1px solid #f2f2f2;
+    display: inline-block;
+    margin:10rpx 10rpx 10rpx 0;
+    border-radius: 10rpx;
+    height: 40rpx;
+    font-size: 28rpx;
+    color: #666;
+  }
+  .select{
+    background: #ffe048;
+  }
+}
+  .refund-people{
+     padding: 0 32rpx;
+     .content{
+        width: 190rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .btn{
+          width: 56rpx;
+          height: 56rpx;
+          border-radius: 50%;
+          border:1px solid #f5f5f5;
+          background: #f4f8fb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          &::after{
+            font-family: 'tour';
+            content:'\e61e';
+          }
+          &.reduce:after{
+            content: '\eee2'
+          }
+        }
+        .num{
+          margin:0 5px;
+        }
+      }
+    .list{
+      height: 80rpx;
+      display: flex;
+      align-items: center;
+      .main{
+        flex: 1;
+      }
+    }
+    .title{
+      font-size: 32rpx;
+    }
+    .select{
+      &::after{
+        font-size: 50rpx;
+         content: '\e71d';
+        color: #ffe048;
+      }
+    }
+  }
+  .refund-des{
+    padding: 0 32rpx;
+    .title{
+      color: #aaaaaa;
+      font-size: 32rpx;
+      line-height: 88rpx;
+    }
+    textarea{
+      border:1px solid #e6e6e6;
+      min-height: 200rpx;
+      width: inherit;
+      padding: 20rpx;
+      box-sizing: border-box;
+      font-size: 28rpx;
+    }
+  }
+  .submit{
+    position: fixed;
+    bottom: 10px;
+    left: 32rpx;
+    right: 32rpx;
+    background: rgba(254, 220, 35, 1);
+  }
+  button[disabled]{
+    background: rgba(254, 220, 35, 0.5) !important;
+  }
+</style>

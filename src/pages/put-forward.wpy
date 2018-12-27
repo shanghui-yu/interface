@@ -1,0 +1,313 @@
+
+<template>
+  <view class="container">
+    <!-- 可提现信息 -->
+    <view class="top">
+      <view class="money">
+        <text>可提现金额</text>
+        <text class="price">￥{{myMoney.waitExtractMoney}}</text>
+      </view>
+      <view class="footer">
+        <navigator hover-class="none" url="/pages/put-forward-list?level={{level}}" class="btn">提现记录</navigator>
+        <navigator hover-class="none" url="/pages/put-forward-apply?level={{level}}&money={{myMoney.waitExtractMoney}}" class="btn">申请提现</navigator>
+      </view>
+      <view class="des" @tap="showDesModel">说明</view>
+    </view>
+
+    <!-- 提现数据 -->
+    <view class="main">
+      <view class="list">
+        <text>已提现金额</text>
+        <text class="price">{{myMoney.extractMoney}}</text>
+      </view>
+      <view class="list">
+        <text>冻结金额</text>
+        <text class="price">{{myCommiss.extractMoney}}</text>
+      </view>
+    </view>
+
+    <!-- 提现列表 -->
+    <view class="forward-list"  wx:if="{{lists.length}}">
+      <view class="thead">
+        <text>序号</text>
+        <text>申请时间</text>
+        <text>金额</text>
+        <text>状态</text>
+      </view>
+      <block wx:for="{{lists}}" wx:key="index">
+        <view class="tbody-tr">
+          <text>{{item.number}}</text>
+          <text>{{item.appyTime}}</text>
+          <text>{{item.extractMoney}}</text>
+          <navigator hover-class="none" url="/pages/put-forward-list" class="look">{{item.status}}</navigator>
+        </view>
+        
+      </block>
+    </view>
+
+    <view class="data-none" wx:else>
+      <image class="img" src="../images/auto.png" />
+      <view>暂无提现记录</view>
+    </view>
+
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import USER from '../api/my.js'
+  export default class typeList extends wepy.page {
+    config = {
+      navigationBarTitleText: '我要提现',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+
+    mixins = [testMixin]
+
+    data = {
+      level: 0,
+      action: 0,
+      page: 1,
+      loading: true,
+      myMoney: {},
+      myCommiss: {},
+      lists: []
+    }
+
+    computed = {
+    }
+    getMyCommiss() {
+      let json = {
+        openId: this.$parent.globalData.openId,
+        userLevel: this.level
+      }
+      USER.myCommiss(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            this.myMoney = data
+            this.$apply()
+          }
+        }
+      })
+    }
+    myCommissQuery() {
+      let json = {
+        openId: this.$parent.globalData.openId,
+        userLevel: this.level
+      }
+      USER.myCommissQuery(json).then(res => {
+        if (res.statusCode === 200) {
+          let {result, data} = res.data
+          if (!result) {
+            this.myCommiss = data
+            this.$apply()
+            console.log(this.myCommiss)
+          }
+        }
+      })
+    }
+    async myCommissRecord() {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let json = {
+        userLevel: this.level,
+        page: this.page,
+        openId: this.$parent.globalData.openId
+      }
+      let res = await USER.myCommissRecord(json)
+      try {
+        if (res.statusCode === 200) {
+          let {result, data, msg} = res.data
+          wepy.hideLoading()
+          if (!result) {
+            if (data.length) {
+              this.loading = true
+              this.page++
+              this.lists = [...this.lists, ...data]
+            } else {
+              this.loading = false
+            }
+            this.$apply()
+          } else {
+            this.showToast(msg)
+          }
+        }
+      } catch (error) { console.log('接口异常') }
+    }
+    onReachBottom() {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
+      this.myCommissRecord()
+    }
+    methods = {
+      showDesModel() {
+        wepy.showModal({
+          title: '提现说明',
+          content: '提现说明提现说明提现说明提现说明提现说明提现说明提现说明'
+        }).then((res) => {
+          if (res.confirm) {
+            console.log('用户点击确定')
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        })
+      }
+    }
+
+    events = {
+    }
+    onShow() {
+      try {
+        let setMoney = wx.getStorageSync('setMoney')
+        if (setMoney) {
+          this.getMyCommiss()
+          this.myCommissQuery()
+          this.myCommissRecord()
+          wx.removeStorageSync('setMoney')
+        }
+      } catch (error) {
+  
+      }
+    }
+    onLoad(option) {
+      if (option.level === '3') {
+        if (option.tapIndex === '0') {
+          this.level = 1
+        } else {
+          this.level = 2
+        }
+      } else {
+        this.level = option.level
+      }
+      this.getMyCommiss()
+      this.myCommissQuery()
+      this.myCommissRecord()
+    }
+  }
+</script>
+<style lang="less" scoped>
+ .top{
+   position: relative;
+   height: 300rpx;
+   text-align: center;
+   padding: 0 32rpx;
+   display: flex;
+   flex-direction: column;
+   background-image:linear-gradient(to bottom,#f69e5c 0%,#f6c6a2 60%,#f8e9de  100%);
+   .money{
+     flex: 1;
+     display: flex;
+     justify-content: center;
+     flex-direction: column;
+     font-size: 32rpx;
+      .price{
+        margin-top: 10rpx;
+        font-size: 64rpx;
+        color: #f80a0a;
+      }
+   }
+   .footer{
+     display: flex;
+     justify-content:space-between;
+     height: 110rpx;
+     align-items: center;
+     .btn{
+       height: 80rpx;
+       width: 45%;
+       background: #ffa800;
+       text-align: center;
+       line-height: 80rpx;
+       border-radius: 10rpx;
+       color: #fff;
+       font-size: 32rpx;
+     }
+   }
+   .des{
+     position: absolute;
+     width: 95rpx;
+     height: 60rpx;
+     line-height: 60rpx;
+     text-align: center;
+     border-top-left-radius: 30rpx;
+     border-bottom-left-radius: 30rpx;
+     border:1px solid #fff;
+     border-right: none;
+     top:40rpx;
+     right: 0;
+     font-size: 24rpx;
+     color: #fff;
+   }
+ }
+ .main{
+   border-top: 20rpx solid #f5f5f5;
+   border-bottom: 20rpx solid #f5f5f5;
+   display: flex;
+   .list{
+     flex:1;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     padding: 20rpx 0;
+     font-size: 32rpx;
+     color: #333333;
+     .price{
+       margin-top: 10rpx;
+       font-size: 48rpx;
+      color: #FFA800;
+     }
+   }
+ }
+ .forward-list{
+   .thead{
+     background: #f5f5f5;
+     font-size: 28rpx;
+     color: #999999;
+     line-height: 80rpx;
+     display: flex;
+     text{
+       flex:1;
+      text-align: center;
+     }
+   }
+   .tbody-tr{
+     line-height: 80rpx;
+     height: 80rpx;
+     font-size: 28rpx;
+     color: #333333;
+     position: relative;
+     display: flex;
+     text,navigator{
+       flex:1;
+       text-align: center;
+     }
+     .look{
+       color: #FFA800;
+     }
+     &::after{
+      content:'';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      height: 1px;
+      border-bottom: 1px solid #D9D9D9;
+      color: #D9D9D9;
+      -webkit-transform-origin: 0 100%;
+      transform-origin: 0 100%;
+      -webkit-transform: scaleY(0.5);
+      transform: scaleY(0.5);
+    }
+   }
+ }
+</style>
