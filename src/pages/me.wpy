@@ -155,7 +155,7 @@
       </navigator>
     </view>
 
-    <view class="tel" @tap="call('13164202147')">13164202147</view>
+    <view class="tel" @tap="call('18931112543')">18931112543</view>
   </view>
 </template>
 
