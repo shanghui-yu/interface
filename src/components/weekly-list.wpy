@@ -76,6 +76,9 @@
     }
     methods = {
       selectTime(item) {
+        if (item.stockNum < 1 && item.stockNum !== -999) {
+          return
+        }
         this.aIndex = item.index
         this.$emit('selectTime', item)
         this.$apply()

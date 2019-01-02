@@ -253,8 +253,8 @@
                 }
               }
             })
-            // this.priceDateThree = data.priceDate.splice(0, 3)
-            this.priceDateThree = this.filterThreeDate(data.priceDate.splice(0, 3))
+            data.priceDate = this.filterThreeDate(data.priceDate)
+            this.priceDateThree = data.priceDate.splice(0, 3)
             this.tickets = data
             this.submit.mobile = data.mobile
             this.submit.username = data.realName
@@ -268,37 +268,32 @@
       })
     }
     filterThreeDate(data) {
+      console.log(data)
+  
+      let now = dayjs().format('YYYY-MM-DD')
+      let tomorrow = dayjs().add(1, 'day').format('YYYY-MM')
       let obj = {
         index: 0,
         stockNum: 0,
         price: '***',
         week: dayjs().format('d')
       }
-      if (!data.length) {
-        data = [obj, obj, obj]
-        data[1].index = 1
-        data[1].week = dayjs().add(1, 'day').format('d')
-        data[2].index = 2
-        data[2].week = dayjs().add(2, 'day').format('d')
-      } else {
-        switch (data.length) {
-          case 1:
-            let addData = [obj, obj]
-            addData[0].index = 1
-            addData[0].week = dayjs().add(1, 'day').format('d')
-            addData[1].index = 2
-            addData[1].week = dayjs().add(2, 'day').format('d')
-            data = [...data, ...addData]
-            break
-          case 2:
-            let addData1 = [obj]
-            addData1[0].index = 2
-            addData1[0].week = dayjs().add(2, 'day').format('d')
-            data = [...data, ...addData1]
-            break
-          default:
-            break
+      if (data.length) {
+        let hasNow = data.every((item) => {
+          return item.date === now
+        })
+        let hasTomorrow = data.every((item) => {
+          return item.date === tomorrow
+        })
+        if (!hasNow) {
+          data.splice(0, 0, obj)
         }
+        if (!hasTomorrow) {
+          data.splice(1, 0, obj)
+        }
+      } else {
+        data = [obj, obj, obj]
+        data[2].week = dayjs().add(2, 'day').format('d')
       }
       return data
     }
