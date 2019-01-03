@@ -30,6 +30,9 @@
       .select{
         background: #fce35b;
       }
+      .disabled{
+        color: #bdc1c4;
+      }
     }
   }
 </style>
@@ -41,7 +44,7 @@
   </view>
   <view class="row" wx:for="{{month}}" wx:key="index">
     <block wx:for="{{item}}" wx:key="idx"  wx:for-index="idx" wx:for-item="week">
-      <view class="item {{week.index==aIndex?'select':''}}" wx:if="{{type!='share'}}" @tap="selectTime({{week}})">
+      <view class="item {{week.index==aIndex?'select':''}} {{week.stockNum<1 && week.stockNum!=-999?'disabled':''}}" wx:if="{{type!='share'}}" @tap="selectTime({{week}})">
         <text>{{week.newDate}}</text>
         <text class="price" wx:if="{{week.price}}">{{week.price}}￥</text>
         <text wx:if="{{week.stockNum==-999}}">充足</text>
