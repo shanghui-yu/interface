@@ -268,8 +268,6 @@
       })
     }
     filterThreeDate(data) {
-      console.log(data)
-  
       let now = dayjs().format('YYYY-MM-DD')
       let tomorrow = dayjs().add(1, 'day').format('YYYY-MM')
       let obj = {
