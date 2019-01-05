@@ -141,25 +141,9 @@
       await this.getBanner()
       await this.getCategory()
       await this.getShopList()
-      if (this.$parent.globalData.openId) {
-        this.userDistribution()
-      }
       // wepy.navigateTo({
       //   url: `/pages/addPhone`
       // })
-    }
-    userDistribution() {
-      try {
-        let distId = wepy.getStorageSync('distId')
-        let json = {
-          openId: this.$parent.globalData.openId,
-          distId: distId
-        }
-        XHR.userDistribution(json).then(res => {
-          console.log(res.data)
-        })
-      } catch (error) {
-      }
     }
     onReachBottom() {
       if (!this.loading) {
