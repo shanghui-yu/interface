@@ -253,7 +253,7 @@
                 }
               }
             })
-            data.priceDate = this.filterThreeDate(data.priceDate)
+            // data.priceDate = this.filterThreeDate(data.priceDate)
             this.priceDateThree = data.priceDate.splice(0, 3)
             this.tickets = data
             this.submit.mobile = data.mobile

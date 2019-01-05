@@ -9,7 +9,7 @@
           </view>
           <view class="content">
             <view class="top">
-              <text>{{item.productName}}</text>
+              <text>{{item.scenicName+"-"+item.productName}}</text>
               <text class="num">数量：{{item.totalNum}}</text>
             </view>
             <view class="time">出行日期：{{item.playDate}}<text class="price">￥{{item.totalMoney}}</text></view>

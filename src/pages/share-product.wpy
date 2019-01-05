@@ -117,7 +117,7 @@
   overflow: hidden;
   box-sizing: border-box;
   .canvas{
-    margin: 20px auto;
+    margin: 0 auto;
   }
   .footer{
     display: flex;
@@ -207,7 +207,7 @@
 
     data = {
       windowW: 0,
-      windowH: 0,
+      windowH: 320,
       height: 400,
       times: {},
       loading: true,
@@ -365,23 +365,31 @@
       })
     }
     drawImg(item, img) {
-      this.windowH = 300
       let context = wx.createCanvasContext('firstCanvas')
       context.fillStyle = '#fff'
-      context.fillRect(0, 0, this.windowW, 300)
-      context.drawImage(img, 15, 0, this.windowW - 30, 180)
-      context.setFontSize(14)
-      context.setFillStyle('#000')
-      context.fillText(`${item.productName}`, 15, 205)
+      context.fillRect(0, 0, this.windowW, this.windowH)
+      context.drawImage(img, 15, 15, this.windowW - 30, 160)
+      this.textWrap(context, {
+        x: 15,
+        y: 205,
+        width: this.windowW - 50,
+        height: 20,
+        line: 2,
+        color: '#000',
+        size: 14,
+        align: 'left',
+        text: item.productName,
+        bold: false
+      })
       context.setFillStyle('red')
       context.setFontSize(18)
-      context.fillText(`￥${item.salePrice}`, 15, 235)
+      context.fillText(`￥${item.salePrice}`, 15, 255)
       context.setFillStyle('#000')
+      context.setFontSize(16)
+      context.fillText('长按识别小程序码访问', 15, 280)
       context.setFontSize(14)
-      context.fillText('长按识别小程序码访问', 15, 265)
-      context.setFontSize(12)
-      context.fillText('亚满票务', 15, 285)
-      context.drawImage(this.codeImg, this.windowW - 75, 235, 60, 60)
+      context.fillText('亚满票务', 15, 305)
+      context.drawImage(this.codeImg, this.windowW - 75, 250, 60, 60)
       let that = this
       context.draw(true, setTimeout(function() {
         that.daochu()
@@ -393,7 +401,7 @@
         x: 0,
         y: 0,
         width: windowW,
-        height: 300,
+        height: this.windowH,
         destWidth: windowW * 2,
         destHeight: 600,
         canvasId: 'firstCanvas',
@@ -478,6 +486,7 @@
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 45 + 'px'
       this.windowW = wepy.getSystemInfoSync().windowWidth * 0.8
       await this.distProduct()
+      this.$apply()
     }
   }
 </script>

@@ -68,11 +68,11 @@
       line-height: 32rpx;
     }
     .label{
-      width: 100rpx;
+      width: 150rpx;
     }
     input{
       height: 56rpx;
-      padding: 0 16rpx;
+      padding: 0 16rpx 0 0;
       display: inline-block;
       box-sizing: border-box;
       flex:1;
@@ -143,10 +143,18 @@
 <template>
 <form bindsubmit="formSubmit">
   <view class="title">修改手机号</view>
-  
+
+  <view class="section">
+   <text class="label">原手机号:</text>
+    <input type="number"
+    value="{{phoneOld}}"
+    placeholder-class="placeholderc" disabled maxlength="11"/>
+    <view class="close" wx:if="{{phone!==''}}" @tap="clearPhone"></view>
+  </view>
+
   <view class="section">
     <view class="err" wx:if="{{phoneErr}}">手机号格式错误，请重新输入</view>
-   <text class="label">手机号</text>
+   <text class="label">新手机号:</text>
     <input type="number"
     placeholder="请填写新手机号" value="{{phone}}"
     placeholder-class="placeholderc"
@@ -157,7 +165,7 @@
 
   <view class="section">
     <view class="err" wx:if="{{cordErr}}">验证码错误，请重新输入或重新获取</view>
-    <text class="label">验证码</text>
+    <text class="label">验证码:</text>
     <input type="number"
       placeholder="请填写验证码"
       maxlength="6"
@@ -195,6 +203,7 @@ export default class Index extends wepy.page {
     option: {},
     beginCountDown: false,
     countDown: 60,
+    phoneOld: '',
     disabledCord: true,
     submitdisabled: true,
     phoneErr: false,
@@ -302,7 +311,8 @@ export default class Index extends wepy.page {
     })
   }
   events = {}
-  onLoad() {
+  onLoad(option) {
+    this.phoneOld = option.phone
   }
 }
 </script>

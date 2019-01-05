@@ -13,7 +13,7 @@
     <!-- 产品信息 -->
     <view class="list">
       <text class="title">产品信息</text>
-      <view class="item tips">{{orderDetai.productName}}</view>
+      <view class="item tips">{{orderDetai.scenicName+"-"+orderDetai.productName}}</view>
       <view class="item"><text class="lable">出行日期：</text>{{orderDetai.playDate}}</view>
       <view class="item"><text class="lable">门票：</text>￥{{orderDetai.totalMoney}} x {{orderDetai.totalNum}}</view>
     </view>

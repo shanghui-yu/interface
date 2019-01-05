@@ -29,6 +29,7 @@
   }
   .menu-list{
     background: #fff;
+    margin-top: 20px;
     .item{
       position: relative;
       padding: 20rpx 32rpx;
@@ -124,11 +125,11 @@
       <image class="avatar" src="{{userinfo.avatarUrl}}" />
       <view class="content">
         <text>{{userinfo.nickName||userinfo.nikeName}}</text>
-        <view class="level-warp" wx:if="{{userinfo.userLevel1}}">
+        <view class="level-warp" wx:if="{{userinfo.userLevel1}}"  @tap="showLabel">
           <text class="level" wx:if="{{level==1}}">一级</text>
           <text class="level" wx:if="{{level==2}}">二级</text>
           <text class="level" wx:if="{{level==3}}">{{tapIndex==0?"一级":"二级"}}</text>
-          <view class="switch" @tap="showLabel" wx:if="{{level==3}}">
+          <view class="switch" wx:if="{{level==3}}">
             <text class="icon arrow"></text>
           </view>
         </view>
@@ -139,8 +140,8 @@
       <navigator class="item" url="/pages/my-order" hover-class="none">
         <view class="my-order">我的订单</view>
       </navigator>
-      <navigator class="item" url="/pages/editPhone" hover-class="none" wx:if="{{userinfo.mobile}}">
-        <view class="my-editPhone">我的账号{{userinfo.mobile}}</view>
+      <navigator class="item" url="/pages/editPhone?phone={{userinfo.mobile}}" hover-class="none" wx:if="{{userinfo.mobile}}">
+        <view class="my-editPhone">我的账号</view>
       </navigator>
       <navigator class="item" wx:if="{{level!=0}}" url="/pages/put-forward?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
         <view class="my-money">我要提现</view>
@@ -149,7 +150,7 @@
         <view class="my-dealer">我的经销商</view>
       </navigator>
       <navigator class="item" wx:if="{{level==2||tapIndex==1}}" url="/pages/my-dealer?type=2" hover-class="none">
-        <view class="my-dealer">我的下级</view>
+        <view class="my-dealer">我的客户</view>
       </navigator>
       <navigator class="item" wx:if="{{level!=0}}" url="/pages/share-product?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
         <view class="my-product">我的分销产品</view>
@@ -205,6 +206,9 @@
         })
       },
       showLabel() {
+        if (this.level !== 3) {
+          return
+        }
         wepy.showActionSheet({
           itemList: ['等级一', '等级二'],
           itemColor: '#2d85b4'
