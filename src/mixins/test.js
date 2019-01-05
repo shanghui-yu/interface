@@ -86,6 +86,71 @@ export default class testMixin extends wepy.mixin {
       return true
     }
   }
+  /**
+   * @Author: yushanghui
+   * @description: 获取文本折行
+   * @param {,Object} context obj
+   * @Date: 2019-01-03 19:20:30
+   */
+  getTextLine (context, obj) {
+    context.setFontSize(obj.size)
+    let arrText = obj.text.split('')
+    let line = ''
+    let arrTr = []
+    for (let i = 0; i < arrText.length; i++) {
+      var testLine = line + arrText[i]
+      var metrics = context.measureText(testLine)
+      var width = metrics.width
+      if (width > obj.width && i > 0) {
+        arrTr.push(line)
+        line = arrText[i]
+      } else {
+        line = testLine
+      }
+      if (i === arrText.length - 1) {
+        arrTr.push(line)
+      }
+    }
+    return arrTr
+  }
+  textWrap (context, obj) {
+    let tr = this.getTextLine(context, obj)
+    for (let i = 0; i < tr.length; i++) {
+      if (i < obj.line) {
+        let txt = {
+          x: obj.x,
+          y: obj.y + (i * obj.height),
+          color: obj.color,
+          size: obj.size,
+          align: obj.align,
+          baseline: obj.baseline,
+          text: tr[i],
+          bold: obj.bold
+        }
+        if (i === obj.line - 1) {
+          txt.text = txt.text.substring(0, txt.text.length - 3) + '......'
+        }
+        this.drawText(context, txt)
+      }
+    }
+  }
+  drawText (context, obj) {
+    context.save()
+    context.setFillStyle(obj.color)
+    context.setFontSize(obj.size)
+    context.setTextAlign(obj.align)
+    context.setTextBaseline(obj.baseline)
+    if (obj.bold) {
+      context.fillText(obj.text, obj.x, obj.y - 0.5)
+      context.fillText(obj.text, obj.x - 0.5, obj.y)
+    }
+    context.fillText(obj.text, obj.x, obj.y)
+    if (obj.bold) {
+      context.fillText(obj.text, obj.x, obj.y + 0.5)
+      context.fillText(obj.text, obj.x + 0.5, obj.y)
+    }
+    context.restore()
+  }
   onShow() {
     console.log('mixin onShow')
   }

@@ -135,6 +135,7 @@ export default class extends wepy.app {
       } else {
         this.globalData.openId = openId
         this.queryUser(openId)
+        this.userDistribution()
       }
     } catch (error) {}
   }
@@ -147,6 +148,7 @@ export default class extends wepy.app {
           wx.setStorageSync('openId', data.openId)
           this.globalData.openId = data.openId
           this.queryUser(data.openId)
+          this.userDistribution()
         }
       }
     })
@@ -160,6 +162,19 @@ export default class extends wepy.app {
         this.globalData.userInfo.mobile = phone
       }
     } catch (e) {
+    }
+  }
+  userDistribution() {
+    try {
+      let distId = wepy.getStorageSync('distId')
+      let json = {
+        openId: this.$parent.globalData.openId,
+        distId: distId
+      }
+      XHR.userDistribution(json).then(res => {
+        console.log(res.data)
+      })
+    } catch (error) {
     }
   }
   queryUser(openId) {
