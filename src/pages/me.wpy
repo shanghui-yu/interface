@@ -122,10 +122,10 @@
 <template>
   <view class="container">
     <view class="user-info">
-      <image class="avatar" src="{{userinfo.avatarUrl}}" />
+      <image class="avatar" src="{{userInfo.avatarUrl}}" />
       <view class="content">
-        <text>{{userinfo.nickName||userinfo.nikeName}}</text>
-        <view class="level-warp" wx:if="{{userinfo.userLevel1}}"  @tap="showLabel">
+        <text>{{userInfo.nickName||userInfo.nikeName}}</text>
+        <view class="level-warp" wx:if="{{userInfo.userLevel1}}"  @tap="showLabel">
           <text class="level" wx:if="{{level==1}}">一级</text>
           <text class="level" wx:if="{{level==2}}">二级</text>
           <text class="level" wx:if="{{level==3}}">{{tapIndex==0?"一级":"二级"}}</text>
@@ -140,7 +140,7 @@
       <navigator class="item" url="/pages/my-order" hover-class="none">
         <view class="my-order">我的订单</view>
       </navigator>
-      <navigator class="item" url="/pages/editPhone?phone={{userinfo.mobile}}" hover-class="none" wx:if="{{userinfo.mobile}}">
+      <navigator class="item" url="/pages/editPhone?phone={{userInfo.mobile}}" hover-class="none" wx:if="{{userInfo.mobile}}">
         <view class="my-editPhone">我的账号</view>
       </navigator>
       <navigator class="item" wx:if="{{level!=0}}" url="/pages/put-forward?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
@@ -166,7 +166,7 @@
   import { connect } from 'wepy-redux'
   import Toast from 'wepy-com-toast'
   import testMixin from '../mixins/test'
-
+  import XHR from '../api'
   @connect({
     num (state) {
       return state.counter.num
@@ -193,7 +193,7 @@
     data = {
       level: 0,
       tapIndex: 0,
-      userinfo: {}
+      userInfo: {}
     }
 
     computed = {
@@ -221,34 +221,43 @@
 
     events = {
     }
-    onShow() {
-    }
-    onLoad() {
+    async queryUser() {
+      let json = {openId: this.$parent.globalData.openId}
+      let res = await XHR.queryUser(json)
       try {
-        let userinfo = wepy.getStorageSync('userinfo')
-        let phone = wepy.getStorageSync('phone')
-        if (userinfo && userinfo.userLevel1) {
-          if ((userinfo.userLevel1 !== '' && userinfo.userLevel2 === '')) {
-            this.level = 1
-          } else if (userinfo.userLevel1 === '' && userinfo.userLevel2 !== '') {
-            this.level = 2
-          } else if (userinfo.userLevel1 !== '' && userinfo.userLevel2 !== '') {
-            this.level = 3
+        if (res.statusCode === 200) {
+          let {data, result} = res.data
+          if (!result) {
+            this.userInfo = data
+            this.$parent.globalData.userInfo = data
+            wepy.setStorageSync('userInfo', data)
+            wepy.setStorageSync('phone', data.mobile)
+            this.$apply()
           }
         }
-        if (!userinfo.avatarUrl) {
-          wepy.redirectTo({
-            url: '/pages/authorization?type=me'
-          })
-        } else if (phone === '') {
-          wepy.redirectTo({
-            url: `/pages/addPhone?type=me`
-          })
-        } else {
-          this.userinfo = userinfo
-          this.$apply()
-        }
       } catch (error) {}
+    }
+    async onShow() {
+      await this.queryUser()
+      if (!this.userInfo.avatarUrl) {
+        wepy.redirectTo({
+          url: '/pages/authorization?type=me'
+        })
+      } else if (this.userInfo.mobile === '') {
+        wepy.redirectTo({
+          url: `/pages/addPhone?type=me`
+        })
+      }
+      if (this.userInfo && this.userInfo.userLevel1) {
+        if ((this.userInfo.userLevel1 !== '' && this.userInfo.userLevel2 === '')) {
+          this.level = 1
+        } else if (this.userInfo.userLevel1 === '' && this.userInfo.userLevel2 !== '') {
+          this.level = 2
+        } else if (this.userInfo.userLevel1 !== '' && this.userInfo.userLevel2 !== '') {
+          this.level = 3
+        }
+      }
+      this.$apply()
     }
   }
 </script>
