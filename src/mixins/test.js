@@ -158,17 +158,17 @@ export default class testMixin extends wepy.mixin {
     let datas = []
     for (let index = 0; index < (monthEnd - now + 1); index++) {
       let json = {
-        date: dayjs().add(index, 'day').format('YYYY-MM-DD'),
+        stockNum: 0,
         price: 0,
-        stockNum: 0
+        date: dayjs().add(index, 'day').format('YYYY-MM-DD')
       }
       datas.push(json)
       if (index === (monthEnd - now)) {
         for (let index = 0; index < nextMonths; index++) {
           let json = {
-            date: dayjs().add(1, 'month').startOf('month').add(index, 'day').format('YYYY-MM-DD'),
+            stockNum: 0,
             price: 0,
-            stockNum: 0
+            date: dayjs().add(1, 'month').startOf('month').add(index, 'day').format('YYYY-MM-DD')
           }
           datas.push(json)
         }

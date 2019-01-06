@@ -51,9 +51,10 @@
         <text wx:elif="{{week.stockNum<1}}">暂无</text>
         <text wx:else>{{week.stockNum}}</text>
       </view>
-      <view class="item {{week.newDate==nowData?'select':''}}" wx:else>
+      <view class="item {{week.newDate==nowData?'select':''}} {{week.salePrice<1 && week.salePrice!=-999?'disabled':''}}" wx:else>
         <text>{{week.newDate}}</text>
         <text class="price" wx:if="{{week.salePrice}}">{{week.salePrice}}￥</text>
+        <text wx:elif="{{week.salePrice<1}}">暂无</text>
         <text wx:if="{{week.distPrice1}}">{{week.distPrice1}}￥</text>
       </view>
     </block>

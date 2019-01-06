@@ -1,4 +1,7 @@
 <style lang="less" scoped>
+.container{
+  height: 100%;
+}
   .product{
     display: flex;
     height: 160rpx;;
@@ -138,9 +141,42 @@
     }
   }
 }
+.search{
+  padding: 20rpx 32rpx;
+  display: flex;
+  .search-input{
+    flex: 1;
+    border:1rpx solid #eee;
+    display: flex;
+    height: 80rpx;
+    align-items: center;
+    padding: 20rpx;
+    box-sizing: border-box;
+    border-radius: 4px;
+    icon{
+      display: inline-block;
+      margin-right: 10rpx;
+    }
+  }
+  input{
+    line-height: 48rpx;
+    flex: 1;
+    font-size: 24rpx;
+  }
+  .search-ok{
+    height: 80rpx;
+    margin-left:10rpx;
+  }
+}
 </style>
 <template>
-  <view>
+  <scroll-view scroll-y="{{noscroll!=''?false:true}}" @scrolltolower="scrollTolo" style="height:{{contentHeight}}px">
+      <view url="/pages/search" hover-class="none" class="search">
+        <view class="search-input">
+          <icon type="search" size="16"/>
+          <input confirm-type="search" @confirm="search" placeholder="请输入关键字搜索产品"/>
+        </view>
+      </view>
       <block wx:for="{{lists}}" wx:key="index" >
           <view class="product">
             <image class="figure" src="{{imgUrl+item.picPath}}" />
@@ -182,7 +218,7 @@
           <button class="btn share"  open-type="share" type="primary">发送给好友</button>
         </view>
       </view>
-  </view>
+  </scroll-view>
 </template>
 
 <script>
@@ -206,6 +242,9 @@
     mixins = [testMixin]
 
     data = {
+      contentHeight: 100,
+      search: '',
+      noscroll: '',
       windowW: 240,
       windowH: 310,
       height: 400,
@@ -233,13 +272,16 @@
 
     methods = {
       closeAction() {
+        this.noscroll = ''
         this.$invoke('actionShow', 'closeAction')
       },
       showAction(productId) {
+        this.noscroll = 'no-scroll'
         this.$invoke('actionShow', 'showAction')
         this.distProductPrice(productId)
       },
       showShare(item) {
+        this.noscroll = 'no-scroll'
         this.share = item
         wepy.showLoading({
           title: '加载中'
@@ -247,7 +289,14 @@
         this.getWXACode(item)
       },
       closePop() {
+        this.noscroll = ''
         this.showPoster = false
+      },
+      search(e) {
+        this.lists = []
+        this.page = 1
+        this.search = e.detail.value
+        this.distProduct()
       }
     }
     distProductPrice(productId) {
@@ -262,8 +311,9 @@
           if (!result) {
             res.data.month = {}
             let num = 0
-            data.priceDate = await this.mapDates(data.priceDate)
-            console.log(data.priceDate)
+            console.log(data)
+            data = await this.mapDates(data)
+            console.log(data, 45)
             data.forEach((element, index) => {
               let key = dayjs(element.productDate).format('YYYY-MM')
               element.newDate = dayjs(element.productDate).format('MM-DD')
@@ -302,25 +352,51 @@
         }
       })
     }
+    async getWeekS() {
+      let now = Number(dayjs().format('DD'))
+      let monthEnd = Number(dayjs().endOf('month').format('DD'))
+      let nextMonths = dayjs().add(1, 'month').endOf('month').format('DD')
+      let datas = []
+      for (let index = 0; index < (monthEnd - now + 1); index++) {
+        let json = {
+          distPrice1: 0,
+          salePrice: 0,
+          productDate: dayjs().add(index, 'day').format('YYYY-MM-DD')
+        }
+        datas.push(json)
+        if (index === (monthEnd - now)) {
+          for (let index = 0; index < nextMonths; index++) {
+            let json = {
+              distPrice1: 0,
+              salePrice: 0,
+              productDate: dayjs().add(1, 'month').startOf('month').add(index, 'day').format('YYYY-MM-DD')
+            }
+            datas.push(json)
+          }
+        }
+      }
+      return datas
+    }
     async mapDates(data) {
       if (data && data.length) {
         let allDates = data.map((item) => {
-          return item.date
+          return item.productDate
         })
         this.calendar.forEach((element, index) => {
-          if (allDates.indexOf(element.date) > -1) {
-            this.calendar[index] = data[allDates.indexOf(element.date)]
+          if (allDates.indexOf(element.productDate) > -1) {
+            this.calendar[index] = data[allDates.indexOf(element.productDate)]
           }
         })
       }
       return this.calendar
     }
     // 我的分销商一级
-    async distProduct() {
+    async distProduct(key) {
       wepy.showLoading({
         title: '加载中'
       })
       let json = {
+        key: this.search,
         userLevel: this.level,
         page: this.page,
         openId: this.$parent.globalData.openId
@@ -346,7 +422,7 @@
         }
       } catch (error) { console.log('接口异常') }
     }
-    onReachBottom() {
+    scrollTolo() {
       if (!this.loading) {
         return
       }
@@ -501,6 +577,7 @@
         this.level = option.level
       }
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 45 + 'px'
+      this.contentHeight = wepy.getSystemInfoSync().windowHeight
       await this.distProduct()
       this.$apply()
     }

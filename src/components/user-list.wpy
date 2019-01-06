@@ -29,6 +29,7 @@
     image{
       width: 64rpx;
       height: 64rpx;
+      margin-right: 8px;
     }
   }
 }
