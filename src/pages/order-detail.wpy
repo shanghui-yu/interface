@@ -122,7 +122,7 @@
     methods = {
       toShoper() {
         wepy.makePhoneCall({
-          phoneNumber: '18931112543'
+          phoneNumber: '0311-83922888'
         })
       },
       refund() {

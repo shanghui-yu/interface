@@ -132,6 +132,7 @@
       defaltSelectCard: [1], // 默认出行人
       selectCardLength: 0,
       priceDateThree: [],
+      calendar: [], // 日历
       submit: {
         openId: '',
         productId: '',
@@ -215,12 +216,13 @@
         productId: this.submit.productId,
         openId: this.$parent.globalData.openId
       }
-      XHR.buyShop(json).then(res => {
+      XHR.buyShop(json).then(async res => {
         if (res.statusCode === 200) {
           let {result, data} = res.data
           if (!result) {
             data.month = {}
             let num = 0
+            data.priceDate = await this.mapDates(data.priceDate)
             data.priceDate.forEach((element, index) => {
               let key = dayjs(element.date).format('YYYY-MM')
               element.newDate = dayjs(element.date).format('MM-DD')
@@ -253,7 +255,6 @@
                 }
               }
             })
-            // data.priceDate = this.filterThreeDate(data.priceDate)
             this.priceDateThree = data.priceDate.splice(0, 3)
             this.tickets = data
             this.submit.mobile = data.mobile
@@ -267,33 +268,18 @@
         }
       })
     }
-    filterThreeDate(data) {
-      let now = dayjs().format('YYYY-MM-DD')
-      let tomorrow = dayjs().add(1, 'day').format('YYYY-MM')
-      let obj = {
-        index: 0,
-        stockNum: 0,
-        price: '***',
-        week: dayjs().format('d')
-      }
-      if (data.length) {
-        let hasNow = data.every((item) => {
-          return item.date === now
+    async mapDates(data) {
+      if (data && data.length) {
+        let allDates = data.map((item) => {
+          return item.date
         })
-        let hasTomorrow = data.every((item) => {
-          return item.date === tomorrow
+        this.calendar.forEach((element, index) => {
+          if (allDates.indexOf(element.date) > -1) {
+            this.calendar[index] = data[allDates.indexOf(element.date)]
+          }
         })
-        if (!hasNow) {
-          data.splice(0, 0, obj)
-        }
-        if (!hasTomorrow) {
-          data.splice(1, 0, obj)
-        }
-      } else {
-        data = [obj, obj, obj]
-        data[2].week = dayjs().add(2, 'day').format('d')
       }
-      return data
+      return this.calendar
     }
     checkSubmit() {
       if (this.submit.payDate === '') {
@@ -416,10 +402,12 @@
         })
       } catch (error) {}
     }
+  
     onShow() {
       this.getSelectCard()
     }
-    onLoad(option) {
+    async onLoad(option) {
+      this.calendar = await this.getWeekS()
       if (option.distId) {
         wepy.setStorageSync('distId', option.distId)
         this.userDistribution(option.distId)

@@ -1,5 +1,5 @@
 import wepy from 'wepy'
-
+import dayjs from 'dayjs'
 export default class testMixin extends wepy.mixin {
   data = {
     imgUrl: 'https://small.5178u.com'
@@ -150,6 +150,31 @@ export default class testMixin extends wepy.mixin {
       context.fillText(obj.text, obj.x + 0.5, obj.y)
     }
     context.restore()
+  }
+  async getWeekS() {
+    let now = Number(dayjs().format('DD'))
+    let monthEnd = Number(dayjs().endOf('month').format('DD'))
+    let nextMonths = dayjs().add(1, 'month').endOf('month').format('DD')
+    let datas = []
+    for (let index = 0; index < (monthEnd - now + 1); index++) {
+      let json = {
+        date: dayjs().add(index, 'day').format('YYYY-MM-DD'),
+        price: 0,
+        stockNum: 0
+      }
+      datas.push(json)
+      if (index === (monthEnd - now)) {
+        for (let index = 0; index < nextMonths; index++) {
+          let json = {
+            date: dayjs().add(1, 'month').startOf('month').add(index, 'day').format('YYYY-MM-DD'),
+            price: 0,
+            stockNum: 0
+          }
+          datas.push(json)
+        }
+      }
+    }
+    return datas
   }
   onShow() {
     console.log('mixin onShow')

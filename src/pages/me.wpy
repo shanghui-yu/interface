@@ -30,6 +30,7 @@
   .menu-list{
     background: #fff;
     margin-top: 20px;
+    margin-bottom: 120rpx;
     .item{
       position: relative;
       padding: 20rpx 32rpx;
@@ -96,14 +97,15 @@
     }
   }
   .tel{
-    margin:120rpx auto 0;
+    margin:0 auto 0;
     text-align: center;
     font-size: 38rpx;
-    &::before{
-       font-family: 'tour';
+    &.icon::before{
+      font-family: 'tour';
       content:'\e658';
       color: #2d85b4;
       margin-right: 10rpx;
+      margin-left: -25px;
     }
   }
   .switch{
@@ -157,7 +159,8 @@
       </navigator>
     </view>
 
-    <view class="tel" @tap="call('18931112543')">18931112543</view>
+    <view class="tel icon" @tap="call('0311-83922888')">0311-83922888</view>
+    <view class="tel" @tap="call('0311-83922666')">0311-83922666</view>
   </view>
 </template>
 

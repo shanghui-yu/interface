@@ -106,7 +106,7 @@
 .pop-img{
   position: fixed;
   z-index: 5000;
-  width: 80%;
+  // width: 80%;
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
@@ -206,8 +206,8 @@
     mixins = [testMixin]
 
     data = {
-      windowW: 0,
-      windowH: 320,
+      windowW: 240,
+      windowH: 310,
       height: 400,
       times: {},
       loading: true,
@@ -216,6 +216,7 @@
       level: 0,
       canvasImg: '',
       ajaxStatus: false,
+      calendar: [], // 日历
       share: {
         productName: '欢迎购买',
         productId: '',
@@ -255,12 +256,14 @@
         userLevel: this.level,
         openId: this.$parent.globalData.openId
       }
-      XHR.distProductPrice(json).then(res => {
+      XHR.distProductPrice(json).then(async res => {
         if (res.statusCode === 200) {
           let {result, data} = res.data
           if (!result) {
             res.data.month = {}
             let num = 0
+            data.priceDate = await this.mapDates(data.priceDate)
+            console.log(data.priceDate)
             data.forEach((element, index) => {
               let key = dayjs(element.productDate).format('YYYY-MM')
               element.newDate = dayjs(element.productDate).format('MM-DD')
@@ -298,6 +301,19 @@
           }
         }
       })
+    }
+    async mapDates(data) {
+      if (data && data.length) {
+        let allDates = data.map((item) => {
+          return item.date
+        })
+        this.calendar.forEach((element, index) => {
+          if (allDates.indexOf(element.date) > -1) {
+            this.calendar[index] = data[allDates.indexOf(element.date)]
+          }
+        })
+      }
+      return this.calendar
     }
     // 我的分销商一级
     async distProduct() {
@@ -368,10 +384,10 @@
       let context = wx.createCanvasContext('firstCanvas')
       context.fillStyle = '#fff'
       context.fillRect(0, 0, this.windowW, this.windowH)
-      context.drawImage(img, 15, 15, this.windowW - 30, 160)
+      context.drawImage(img, 15, 15, this.windowW - 30, 180)
       this.textWrap(context, {
         x: 15,
-        y: 205,
+        y: 215,
         width: this.windowW - 50,
         height: 20,
         line: 2,
@@ -384,12 +400,12 @@
       context.setFillStyle('red')
       context.setFontSize(18)
       context.fillText(`￥${item.salePrice}`, 15, 255)
-      context.setFillStyle('#000')
-      context.setFontSize(16)
-      context.fillText('长按识别小程序码访问', 15, 280)
+      context.setFillStyle('#333')
+      context.setFontSize(12)
+      context.fillText('长按识别小程序码访问', 15, 275)
       context.setFontSize(14)
-      context.fillText('亚满票务', 15, 305)
-      context.drawImage(this.codeImg, this.windowW - 75, 250, 60, 60)
+      context.fillText('亚满票务', 15, 300)
+      context.drawImage(this.codeImg, this.windowW - 75, 245, 60, 60)
       let that = this
       context.draw(true, setTimeout(function() {
         that.daochu()
@@ -402,8 +418,8 @@
         y: 0,
         width: windowW,
         height: this.windowH,
-        destWidth: windowW * 2,
-        destHeight: 600,
+        destWidth: windowW * 3,
+        destHeight: this.windowH * 3,
         canvasId: 'firstCanvas',
         success: (res) => {
           this.canvasImg = res.tempFilePath
@@ -474,6 +490,7 @@
     onReady(e) {
     }
     async onLoad(option) {
+      this.calendar = await this.getWeekS()
       if (option.level === '3') {
         if (option.tapIndex === '0') {
           this.level = 1
@@ -484,7 +501,6 @@
         this.level = option.level
       }
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 45 + 'px'
-      this.windowW = wepy.getSystemInfoSync().windowWidth * 0.8
       await this.distProduct()
       this.$apply()
     }
