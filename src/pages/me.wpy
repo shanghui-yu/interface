@@ -100,12 +100,15 @@
     margin:0 auto 0;
     text-align: center;
     font-size: 38rpx;
-    &.icon::before{
+    &::before{
       font-family: 'tour';
       content:'\e658';
       color: #2d85b4;
       margin-right: 10rpx;
       margin-left: -25px;
+    }
+    &.icon::before{
+      opacity: 0;
     }
   }
   .switch{
@@ -159,8 +162,8 @@
       </navigator>
     </view>
 
-    <view class="tel icon" @tap="call('0311-83922888')">0311-83922888</view>
-    <view class="tel" @tap="call('0311-83922666')">0311-83922666</view>
+    <view class="tel" @tap="call('0311-83922888')">0311-83922888</view>
+    <view class="tel icon" @tap="call('0311-83922666')">0311-83922666</view>
   </view>
 </template>
 
