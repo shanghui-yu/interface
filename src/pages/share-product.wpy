@@ -523,10 +523,13 @@
             icon: 'success',
             duration: 2000
           })
+          this.noscroll = ''
           this.showPoster = !this.showPoster
           this.$apply()
         },
         fail(res) {
+          this.noscroll = ''
+          this.$apply()
           wepy.showToast({
             title: '保存失败',
             icon: 'success',
