@@ -108,7 +108,6 @@
           if (!result) {
             this.myCommiss = data
             this.$apply()
-            console.log(this.myCommiss)
           }
         }
       })
@@ -153,7 +152,8 @@
       showDesModel() {
         wepy.showModal({
           title: '提现说明',
-          content: '提现说明提现说明提现说明提现说明提现说明提现说明提现说明'
+          showCancel: false,
+          content: '提现方式:1)微信2)支付宝3)银行卡，最少提现额度:100，每日提现上限:10000，提现时间:每周二（9:00-17:00，到账周期：一个工作日内，提现手续费:每月首次提现免手续费，第二次起收取千分之六。'
         }).then((res) => {
           if (res.confirm) {
             console.log('用户点击确定')

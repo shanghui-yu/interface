@@ -81,6 +81,7 @@ export default class extends wepy.app {
       'pages/editPhone',
       'pages/webview',
       'pages/share-product',
+      'pages/serve-word',
       'pages/search'
     ],
     window: {

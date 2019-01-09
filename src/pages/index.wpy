@@ -142,7 +142,7 @@
       await this.getCategory()
       await this.getShopList()
       // wepy.navigateTo({
-      //   url: `/pages/addPhone`
+      //   url: `/pages/serve-word`
       // })
     }
     onReachBottom() {

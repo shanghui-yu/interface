@@ -66,8 +66,8 @@
       </view>
     </view>
     <view class="tips">点击提交表示阅读并同意
-      <navigator hover-class="none" url=''>《服务旅游协议》、</navigator>
-      <navigator hover-class="none" url=''>《旅游安全须知》</navigator>
+      <navigator hover-class="none" url='/pages/serve-word'>《服务旅游协议》、</navigator>
+      <!-- <navigator hover-class="none" url=''>《旅游安全须知》</navigator> -->
     </view>
 
     <!-- 下单 -->
