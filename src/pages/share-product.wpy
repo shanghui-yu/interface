@@ -166,6 +166,7 @@
   .search-ok{
     height: 80rpx;
     margin-left:10rpx;
+    line-height: 80rpx;
   }
 }
 </style>
@@ -174,8 +175,9 @@
       <view url="/pages/search" hover-class="none" class="search">
         <view class="search-input">
           <icon type="search" size="16"/>
-          <input confirm-type="search" @confirm="search" placeholder="请输入关键字搜索产品"/>
+          <input placeholder="请输入关键字搜索产品" @input="seachInput"/>
         </view>
+        <button class="search-ok" @tap="toSearch" type="primary">搜索</button>
       </view>
       <block wx:for="{{lists}}" wx:key="index" >
           <view class="product">
@@ -292,10 +294,13 @@
         this.noscroll = ''
         this.showPoster = false
       },
-      search(e) {
+      seachInput(e) {
+        this.search = e.detail.value
+      },
+      toSearch(e) {
         this.lists = []
         this.page = 1
-        this.search = e.detail.value
+        this.loading = true
         this.distProduct()
       }
     }
@@ -311,9 +316,7 @@
           if (!result) {
             res.data.month = {}
             let num = 0
-            console.log(data)
             data = await this.mapDates(data)
-            console.log(data, 45)
             data.forEach((element, index) => {
               let key = dayjs(element.productDate).format('YYYY-MM')
               element.newDate = dayjs(element.productDate).format('MM-DD')
@@ -392,8 +395,13 @@
     }
     // 我的分销商一级
     async distProduct(key) {
+      if (!this.loading) {
+        return
+      }
+      this.loading = false
       wepy.showLoading({
-        title: '加载中'
+        title: '加载中',
+        mask: true
       })
       let json = {
         key: this.search,
@@ -407,13 +415,13 @@
           this.ajaxStatus = true
           let {result, data} = res.data
           if (!result) {
-            if (data.length) {
-              this.loading = true
-              this.page++
-              this.lists = [...this.lists, ...data]
-            } else {
+            if (data.length < 10) {
               this.loading = false
+            } else {
+              this.page++
+              this.loading = true
             }
+            this.lists = [...this.lists, ...data]
             wepy.hideLoading()
             this.$apply()
           } else {
@@ -423,10 +431,6 @@
       } catch (error) { console.log('接口异常') }
     }
     scrollTolo() {
-      if (!this.loading) {
-        return
-      }
-      this.loading = false
       this.distProduct()
     }
     events = {
@@ -483,7 +487,7 @@
       context.fillText('亚满票务', 15, 300)
       context.drawImage(this.codeImg, this.windowW - 75, 245, 60, 60)
       let that = this
-      context.draw(true, setTimeout(function() {
+      context.draw(false, setTimeout(function() {
         that.daochu()
       }, 1000))
     }
@@ -499,6 +503,7 @@
         canvasId: 'firstCanvas',
         success: (res) => {
           this.canvasImg = res.tempFilePath
+          console.log(this.canvasImg, 789)
           this.$apply()
         },
         fail: function(res) {
@@ -515,6 +520,8 @@
         mask: true
       })
       let imgs = this.canvasImg
+      console.log(this.canvasImg, 78)
+  
       wx.saveImageToPhotosAlbum({
         filePath: imgs,
         success: (res) => {
@@ -527,7 +534,8 @@
           this.showPoster = !this.showPoster
           this.$apply()
         },
-        fail(res) {
+        fail: (res) => {
+          console.log(res)
           this.noscroll = ''
           this.$apply()
           wepy.showToast({
@@ -543,7 +551,7 @@
         openId: this.$parent.globalData.openId,
         distId: this.$parent.globalData.userInfo.companyId2,
         productId: item.productId,
-        content: `/pages/buy-tickets/buy-tickets?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
+        content: `pages/buy-tickets/?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
       }
       XHR.getWXACode(json).then(res => {
         if (res.statusCode === 200) {
