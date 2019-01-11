@@ -181,7 +181,7 @@
       </view>
       <block wx:for="{{lists}}" wx:key="index" >
           <view class="product">
-            <image class="figure" src="{{imgUrl+item.picPath}}" />
+            <image class="figure" lazy-load src="{{imgUrl+item.picPath}}" />
             <view class="main">
               <view class="label">{{item.productName}}</view>
               <view class="label footer-text">最低价：{{item.salePrice}}元</view>

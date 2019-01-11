@@ -134,7 +134,7 @@
 <template>
   <view class="container">
     <view class="user-info">
-      <image class="avatar" src="{{userInfo.avatarUrl}}" />
+      <image class="avatar" lazy-load src="{{userInfo.avatarUrl}}" />
       <view class="content">
         <text>{{userInfo.nickName||userInfo.nikeName}}</text>
         <view class="level-warp" wx:if="{{userInfo.userLevel1}}"  @tap="showLabel">

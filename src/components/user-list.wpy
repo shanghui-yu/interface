@@ -37,7 +37,7 @@
 <template>
  <view class="item" wx:if="{{itemVal.name&&itemVal.name!=''||itemVal.nikeName!=''}}">
     <view class="main">
-      <image src="{{itemVal.avatarUrl}}"  wx:if="{{itemVal.avatarUrl}}"/>
+      <image src="{{itemVal.avatarUrl}}" lazy-load wx:if="{{itemVal.avatarUrl}}"/>
       <text class="label">{{itemVal.name?itemVal.name:itemVal.nikeName}}</text>
     </view>
     <text class="right" wx:if="{{itemVal.mobile}}">{{itemVal.mobile}}</text>

@@ -11,7 +11,7 @@
       <block wx:for="{{imgUrls}}" wx:key="index">
         <swiper-item wx:if="{{item.img_path}}">
           <navigator url="/pages/webview?bannerId={{item.id}}" hover-class="none">
-            <image src="{{imgUrl+item.img_path}}" class="slide-image"/>
+            <image src="{{imgUrl+item.img_path}}" lazy-load="{{true}}" class="slide-image"/>
           </navigator>
         </swiper-item>
       </block>
@@ -21,7 +21,7 @@
     <view class="nav-wrap">
        <repeat for="{{menu}}" key="index" index="index" item="item">
           <navigator class="nav" url='/pages/type-list?id={{item.id}}&kind_level={{item.kind_level}}'>
-            <image src="{{imgUrl+item.img_path}}" class="icon-image"/>
+            <image src="{{imgUrl+item.img_path}}" lazy-load="{{true}}" class="icon-image"/>
             <text class="name">{{item.name}}</text>
           </navigator>
       </repeat>

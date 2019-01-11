@@ -5,7 +5,7 @@
      <swiper  class="swiper" autoplay indicator-dots interval="{{interval}}" duration="{{duration}}">
       <block wx:for="{{detail.img_path}}" wx:key="index">
         <swiper-item v-if="item">
-          <image src="{{imgUrl+item}}" class="slide-image"/>
+          <image src="{{imgUrl+item}}" lazy-load class="slide-image"/>
         </swiper-item>
       </block>
     </swiper>

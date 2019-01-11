@@ -65,7 +65,7 @@
 </style>
 <template>
   <navigator hover-class="none" url="/pages/detail?id={{item.id}}" class="project-item">
-      <image class="figure" src="{{imgUrl+item.img_path}}" />
+      <image class="figure" lazy-load="true" src="{{imgUrl+item.img_path}}" />
       <view class="content">
         <view class="name">{{item.name}}</view>
         <!-- <view class="tips">
