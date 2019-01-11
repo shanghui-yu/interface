@@ -503,7 +503,6 @@
         canvasId: 'firstCanvas',
         success: (res) => {
           this.canvasImg = res.tempFilePath
-          console.log(this.canvasImg, 789)
           this.$apply()
         },
         fail: function(res) {
@@ -520,8 +519,6 @@
         mask: true
       })
       let imgs = this.canvasImg
-      console.log(this.canvasImg, 78)
-  
       wx.saveImageToPhotosAlbum({
         filePath: imgs,
         success: (res) => {
@@ -551,7 +548,9 @@
         openId: this.$parent.globalData.openId,
         distId: this.$parent.globalData.userInfo.companyId2,
         productId: item.productId,
-        content: `pages/buy-tickets/?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
+        page: 'pages/buy-tickets',
+        scene: `${item.productId}&${item.salePrice}&${this.$parent.globalData.userInfo.companyId2}`
+        // content: `pages/buy-tickets/?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
       }
       XHR.getWXACode(json).then(res => {
         if (res.statusCode === 200) {

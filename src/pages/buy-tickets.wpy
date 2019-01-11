@@ -412,9 +412,20 @@
         wepy.setStorageSync('distId', option.distId)
         this.userDistribution(option.distId)
       }
-      this.submit.productId = option.id
-      this.price = Number(option.price)
-      this.allPrice = this.toDecimal2(this.price * this.submit.num)
+      if (option.scene) {
+        let scene = decodeURIComponent(option.scene)
+        scene = scene.split('&')
+        this.submit.productId = scene[0]
+        this.price = Number(scene[1])
+        this.allPrice = this.toDecimal2(this.price * this.submit.num)
+        wepy.setStorageSync('distId', scene[2])
+        this.userDistribution(scene[2])
+      } else {
+        this.submit.productId = option.id
+        this.price = Number(option.price)
+        this.allPrice = this.toDecimal2(this.price * this.submit.num)
+      }
+  
       wepy.setStorageSync('selectCard', [])
       this.submit.openId = this.$parent.globalData.openId
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 45 + 'px'

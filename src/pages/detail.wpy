@@ -92,7 +92,7 @@
       </view>
       <view slot="footer" class="action-footer">
         <view class="price">￥{{notece.price}}</view>
-        <button plain size="mini" @tap="toBuy({{notece}})" url="/pages/buy-tickets">购买</button>
+        <button plain size="mini" @tap="toBuy({{notece}})">购买</button>
       </view>
     </actionShow>
   </view>
