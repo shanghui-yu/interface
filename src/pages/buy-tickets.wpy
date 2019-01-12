@@ -76,7 +76,7 @@
         <text>总价</text>
         <text class="price">￥{{allPrice}}</text>
       </view>
-      <button plain  class="submit" @tap="submitFun">立即购买</button>
+      <button plain  class="submit" @tap="checkAuthorization">立即购买</button>
     </view>
 
     <actionShow>
@@ -316,6 +316,23 @@
           }
           break
       }
+    }
+    checkAuthorization() {
+      try {
+        let userinfo = wepy.getStorageSync('userinfo')
+        let phone = wepy.getStorageSync('phone')
+        if (!userinfo.avatarUrl) {
+          wepy.redirectTo({
+            url: '/pages/authorization?type=detail'
+          })
+        } else if (phone === '') {
+          wepy.redirectTo({
+            url: `/pages/addPhone?type=detail`
+          })
+        } else {
+          this.submitFun()
+        }
+      } catch (error) {}
     }
     submitFun() {
       if (this.checkSubmit() === false) {
