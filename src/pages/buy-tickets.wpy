@@ -216,6 +216,9 @@
         productId: this.submit.productId,
         openId: this.$parent.globalData.openId
       }
+      wepy.showLoading({
+        title: '加载中'
+      })
       XHR.buyShop(json).then(async res => {
         if (res.statusCode === 200) {
           let {result, data} = res.data
@@ -263,6 +266,7 @@
             wepy.setNavigationBarTitle({
               title: data.name
             })
+            wepy.hideLoading()
             this.$apply()
           }
         }
