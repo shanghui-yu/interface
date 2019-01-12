@@ -261,8 +261,8 @@
           url: `/pages/addPhone?type=me`
         })
       }
-      if (this.userInfo && this.userInfo.userLevel1) {
-        if ((this.userInfo.userLevel1 !== '' && this.userInfo.userLevel2 === '')) {
+      if (this.userInfo) {
+        if (this.userInfo.userLevel1 !== '' && this.userInfo.userLevel2 === '') {
           this.level = 1
         } else if (this.userInfo.userLevel1 === '' && this.userInfo.userLevel2 !== '') {
           this.level = 2

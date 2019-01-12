@@ -21,6 +21,10 @@
           </view> -->
       </navigator>
     </block>
+    <view class="data-none" wx:if="{{!orderList.length&&ajaxStatus}}">
+      <image class="img" src="../images/auto.png" />
+      <view>暂无订单</view>
+    </view>
   </view>
 </template>
 
@@ -56,6 +60,7 @@
       page: 1,
       openId: '',
       loading: true,
+      ajaxStatus: false,
       orderList: []
     }
 
@@ -83,6 +88,7 @@
             } else {
               this.loading = false
             }
+            this.ajaxStatus = true
             wepy.hideLoading()
             this.$apply()
           }
