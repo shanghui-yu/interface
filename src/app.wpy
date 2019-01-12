@@ -125,7 +125,7 @@ export default class extends wepy.app {
     this.use('promisify')
   }
 
-  onLaunch() {
+  async onLaunch() {
     const updateManager = wx.getUpdateManager()
     updateManager.onCheckForUpdate(function (res) {
       // 请求完新版本信息的回调
@@ -154,9 +154,8 @@ export default class extends wepy.app {
     try {
       let openId = wepy.getStorageSync('openId')
       if (!openId) {
-        wepy.login().then(res => {
-          this.getopenId(res.code)
-        })
+        let res = await wepy.login()
+        this.getopenId(res.code)
         this.getUserInfo()
       } else {
         this.globalData.openId = openId
@@ -194,7 +193,7 @@ export default class extends wepy.app {
     try {
       let distId = wepy.getStorageSync('distId')
       let json = {
-        openId: this.$parent.globalData.openId,
+        openId: this.globalData.openId,
         distId: distId
       }
       XHR.userDistribution(json).then(res => {
