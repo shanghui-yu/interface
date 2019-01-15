@@ -1,11 +1,12 @@
 <style lang="less">
 @font-face {
   font-family: 'tour';  /* project id 877926 */
-  src: url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.eot');
-  src: url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.eot?#iefix') format('embedded-opentype'),
-  url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.woff') format('woff'),
-  url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.ttf') format('truetype'),
-  url('//at.alicdn.com/t/font_877926_nj7bq9ivxu.svg#tour') format('svg');
+  src: url('//at.alicdn.com/t/font_877926_5e8x4ofitin.eot');
+  src: url('//at.alicdn.com/t/font_877926_5e8x4ofitin.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.woff2') format('woff2'),
+  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.woff') format('woff'),
+  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.svg#tour') format('svg');
 }
 @font-face {
   font-family: 'vanca';  /* project id 553467 */
@@ -44,6 +45,21 @@ page{
       height: 260rpx;
     }
   }
+.go-back{
+  position: fixed;
+  bottom: 70px;
+  right: 0;
+  width: 60px;
+  height: 32px;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  background: #fde344;
+  color: #222;
+  text-align: center;
+  line-height: 32px; 
+  z-index: 1000;
+  font-size: 28rpx;
+}
 </style>
 
 <script>
