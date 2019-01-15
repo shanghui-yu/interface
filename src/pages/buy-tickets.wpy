@@ -1,7 +1,7 @@
 
 <template>
   <view class="container">
-    <view class="top-title">{{tickets.name}}</view>
+    <view class="top-title" @tap="tohome"><view wx:if="{{isShare}}" class="icon arrow"></view> {{tickets.name}}</view>
 
     <view class="time-info">
       <view class="time-title">使用日期</view>
@@ -92,6 +92,7 @@
         </scroll-view>
       </view>
     </actionShow>
+    <navigator open-type="switchTab" wx:if="{{isShare}}" url="/pages/index" hover-class="none"  class="go-back">首页</navigator>
   </view>
 
 </template>
@@ -132,6 +133,7 @@
       defaltSelectCard: [1], // 默认出行人
       selectCardLength: 0,
       priceDateThree: [],
+      isShare: false,
       calendar: [], // 日历
       submit: {
         openId: '',
@@ -150,6 +152,11 @@
     }
 
     methods = {
+      tohome() {
+        wepy.switchTab({
+          url: `/pages/index`
+        })
+      },
       closeAction() {
         this.$invoke('actionShow', 'closeAction')
       },
@@ -434,6 +441,7 @@
         this.userDistribution(option.distId)
       }
       if (option.scene) {
+        this.isShare = true
         let scene = decodeURIComponent(option.scene)
         scene = scene.split('&')
         this.submit.productId = scene[0]
@@ -465,6 +473,15 @@
   font-weight: bold;
   color: #000;
   padding: 0 32rpx;
+  .arrow{
+    &::before{
+      font-family: 'tour';
+      text-align: left;
+      display: inline-block;
+      font-weight: normal;
+      content: '\e6be'
+    }
+  }
 }
 .select-time{
   padding:  20rpx 32rpx;

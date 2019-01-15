@@ -175,9 +175,9 @@
       },
       toAddress() {
         wx.openLocation({
-          latitude: this.detail.latitude,
-          longitude: this.detail.accuracy,
-          scale: 18
+          latitude: Number(this.detail.accuracy),
+          longitude: Number(this.detail.latitude),
+          scale: 16
         })
       }
     }
