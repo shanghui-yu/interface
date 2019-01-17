@@ -27,7 +27,7 @@
           <text class="lable">营业时间：</text><text class="content">{{detail.businessHours}}</text>
         </view>
         <view class="item" @tap="toAddress">
-          <text class="lable">景区地址：</text><text class="content">{{detail.address}}</text> 
+          <text class="lable">景区地址：</text><text class="content">{{detail.address}}</text><text class="address-icon">地图</text> 
         </view>
       </view>
     </view>
@@ -309,6 +309,14 @@
       }
       .content{
         flex: 1;
+      }
+      .address-icon{
+        &::after{
+          font-family: 'tour';
+          content:'\e769';
+          font-size: 24rpx;
+          margin-left: 2px;
+        }
       }
     }
   }
