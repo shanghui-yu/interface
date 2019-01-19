@@ -388,6 +388,9 @@
         this.calendar.forEach((element, index) => {
           if (allDates.indexOf(element.productDate) > -1) {
             this.calendar[index] = data[allDates.indexOf(element.productDate)]
+          } else {
+            this.calendar[index].distPrice1 = 0
+            this.calendar[index].salePrice = 0
           }
         })
       }
