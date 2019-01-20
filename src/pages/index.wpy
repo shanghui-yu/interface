@@ -137,12 +137,20 @@
         }
       } catch (error) { console.log('接口异常') }
     }
+    onShareAppMessage(res) {
+      if (res.from === 'button') {
+        this.$apply()
+      }
+      return {
+        title: '欢迎访问亚满票务'
+      }
+    }
     async onLoad() {
       await this.getBanner()
       await this.getCategory()
       await this.getShopList()
       // wepy.navigateTo({
-      //   url: `/pages/serve-word`
+      //   url: `/pages/joinCompan`
       // })
     }
     onReachBottom() {

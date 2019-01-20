@@ -29,8 +29,9 @@
   }
   .menu-list{
     background: #fff;
-    margin-top: 20px;
-    margin-bottom: 120rpx;
+    padding-top: 20px;
+    padding-bottom: 120rpx;
+    box-sizing: border-box;
     .item{
       position: relative;
       padding: 20rpx 32rpx;
@@ -94,6 +95,12 @@
         color: #1afa29;
         margin-right: 10rpx;
       }
+      .my-code::before{
+        font-family: 'tour';
+        content:'\e66e';
+        color: #515151;
+        margin-right: 10rpx;
+      }
     }
   }
   .tel{
@@ -114,6 +121,10 @@
       height: 48rpx;
       display: inline-block;
     }
+    &.telicon{
+      padding-bottom: 100rpx;
+      box-sizing: border-box;
+    }
     &.telicon::before{
       content:'';
     }
@@ -128,6 +139,36 @@
         content: '\e769';
         transform: rotate(180deg)
       }
+    }
+  }
+ 
+  .pane{
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    transform: translate(0, 100%);
+    transition: transform 0s;
+  }
+  .action-sheet{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, .6);
+    z-index: 100;
+    overflow: hidden;
+    .pane{
+       transform: translate(0, 0);
+    }
+    .down{
+      border-radius: 0;
+      width: 100%;
+      font-size: 16px;
+      color: #FF6600;
+      text-align: center;
+      line-height: 49px;
+      border-top: 1px solid #E4E5E6;
     }
   }
 </style>
@@ -167,11 +208,22 @@
       <navigator class="item" wx:if="{{level!=0}}" url="/pages/share-product?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
         <view class="my-product">我的分销产品</view>
       </navigator>
+      <view class="item" wx:if="{{level==1||(tapIndex==0&&level==3)}}" @tap="showCode">
+        <view class="my-code">我的邀请码</view>
+      </view>
     </view>
 
     <text class="tel" @tap="call('0311-83922888')">0311-83922888</text>
     <text class="tel telicon" @tap="call('0311-83922666')">0311-83922666</text>
+
+    <view class="{{actionSheet}}" hidden="{{!actionSheet}}" @tap="hideShare" catchtouchmove='{{true}}'>
+      <view class="pane">
+        <canvas style='width:{{screenWidth}}px;height:250px;overflow:hidden' canvas-id="firstCanvas"></canvas>
+        <button class="down" @tap.stop="savaImg">保存图片</button>
+      </view>
+    </view>
   </view>
+  
 </template>
 
 <script>
@@ -206,7 +258,12 @@
     data = {
       level: 0,
       tapIndex: 0,
-      userInfo: {}
+      actionSheet: '',
+      userInfo: {},
+      canvasImg: '',
+      codeImg: '',
+      count: 0, // 记录次数
+      screenWidth: 0 // 设备宽度
     }
 
     computed = {
@@ -229,9 +286,100 @@
           this.tapIndex = res.tapIndex
           this.$apply()
         })
+      },
+      showCode() {
+        this.actionSheet = 'action-sheet'
+      },
+      hideShare() {
+        this.actionSheet = ''
+      },
+      savaImg() {
+        wepy.showLoading({
+          title: '保存中...',
+          mask: true
+        })
+        let imgs = this.canvasImg
+        wx.saveImageToPhotosAlbum({
+          filePath: imgs,
+          success: (res) => {
+            wepy.hideLoading()
+            this.showInfo('保存成功')
+          },
+          fail: (res) => {
+            wepy.hideLoading()
+            this.showInfo('保存失败，可尝试删除小程序重新允许授权！')
+          }
+        })
       }
     }
-
+    drawImg() {
+      let context = wx.createCanvasContext('firstCanvas')
+      context.fillStyle = '#fff'
+      context.fillRect(0, 0, this.screenWidth, 250)
+      context.setFontSize(14)
+      context.setFillStyle('#17181a')
+      context.setTextAlign('center')
+      context.fillText(`扫描下方二维码加入`, this.screenWidth / 2, 40)
+      context.drawImage(this.codeImg, this.screenWidth / 2 - 60, 80, 120, 120)
+      let that = this
+      context.draw(false, () => {
+        setTimeout(() => {
+          that.export()
+        }, 1000)
+      })
+    }
+    export() {
+      let that = this
+      wx.canvasToTempFilePath({
+        x: 0,
+        y: 0,
+        width: that.screenWidth,
+        height: 250,
+        destWidth: that.screenWidth * 2,
+        destHeight: 620,
+        canvasId: 'firstCanvas',
+        success: (res) => {
+          that.canvasImg = res.tempFilePath
+          that.$apply()
+        },
+        fail: function(res) {
+          that.count++
+          if (that.count < 5) {
+            that.export()
+          }
+          that.$apply()
+        }
+      })
+    }
+    async getCode() {
+      try {
+        let json = {
+          openId: this.$parent.globalData.openId,
+          distId: this.userInfo.companyId1,
+          page: 'pages/joinCompan',
+          scene: `${this.userInfo.companyId1}`
+        }
+        let res = await XHR.getOneShareCode(json)
+        if (res.statusCode === 200) {
+          let {status, data, msg} = res.data
+          if (!status) {
+            wx.downloadFile({
+              url: this.imgUrl + data.path,
+              success: (res) => {
+                this.codeImg = res.tempFilePath
+                this.drawImg()
+                this.$apply()
+              },
+              fail: function(res) {
+                console.log(res)
+              }
+            })
+          } else {
+            this.showToast(msg)
+          }
+        }
+      } catch (error) {}
+    }
     events = {
     }
     async queryUser() {
@@ -252,6 +400,8 @@
     }
     async onShow() {
       await this.queryUser()
+      await this.getCode()
+      this.screenWidth = wepy.getSystemInfoSync().windowWidth
       if (!this.userInfo.avatarUrl) {
         wepy.redirectTo({
           url: '/pages/authorization?type=me'

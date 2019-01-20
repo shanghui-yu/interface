@@ -56,6 +56,7 @@ export default class testMixin extends wepy.mixin {
   showToast(message, succress) {
     wepy.showToast({
       icon: 'none',
+      mask: true,
       title: message,
       duration: 2000
     }).then(succress)
