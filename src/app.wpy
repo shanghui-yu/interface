@@ -1,12 +1,12 @@
 <style lang="less">
 @font-face {
   font-family: 'tour';  /* project id 877926 */
-  src: url('//at.alicdn.com/t/font_877926_5e8x4ofitin.eot');
-  src: url('//at.alicdn.com/t/font_877926_5e8x4ofitin.eot?#iefix') format('embedded-opentype'),
-  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.woff2') format('woff2'),
-  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.woff') format('woff'),
-  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.ttf') format('truetype'),
-  url('//at.alicdn.com/t/font_877926_5e8x4ofitin.svg#tour') format('svg');
+  src: url('//at.alicdn.com/t/font_877926_o2kjbp4uevc.eot');
+  src: url('//at.alicdn.com/t/font_877926_o2kjbp4uevc.eot?#iefix') format('embedded-opentype'),
+  url('//at.alicdn.com/t/font_877926_o2kjbp4uevc.woff2') format('woff2'),
+  url('//at.alicdn.com/t/font_877926_o2kjbp4uevc.woff') format('woff'),
+  url('//at.alicdn.com/t/font_877926_o2kjbp4uevc.ttf') format('truetype'),
+  url('//at.alicdn.com/t/font_877926_o2kjbp4uevc.svg#tour') format('svg');
 }
 @font-face {
   font-family: 'vanca';  /* project id 553467 */
@@ -98,7 +98,8 @@ export default class extends wepy.app {
       'pages/webview',
       'pages/share-product',
       'pages/serve-word',
-      'pages/search'
+      'pages/search',
+      'pages/joinCompan'
     ],
     window: {
       backgroundTextStyle: 'light',
