@@ -1,5 +1,9 @@
 import wepy from 'wepy'
 const fetch = ({url, body, type}) => {
+  if (body) {
+    body['ts'] = +new Date()
+  }
+
   if (type === 'POST') {
     return wepy.request({
       url,
