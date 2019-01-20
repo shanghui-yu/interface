@@ -112,6 +112,28 @@ class XHR {
       type: 'POST'
     })
   }
+  getOneShareCode(json) { // 1级分销商的分享二维码
+    return fetch({
+      url: `${fetch.URLS}/getFirstWXACode.do`,
+      body: json,
+      type: 'POST'
+    })
+  }
+  applyCompanyQuery(json) { // 1级分销商的发展2级分销商 先根据openId查询
+    return fetch({
+      url: `${fetch.URLS}/applyCompanyQuery.do`,
+      body: json,
+      type: 'POST'
+    })
+  }
+
+  applyCompan(json) { // 加入一级分销商
+    return fetch({
+      url: `${fetch.URLS}/applyCompany.do`,
+      body: json,
+      type: 'POST'
+    })
+  }
 }
 
 export default new XHR()
