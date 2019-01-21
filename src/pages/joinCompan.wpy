@@ -87,7 +87,7 @@
 
   <view class="section">
    <text class="label">公司名称:</text>
-    <input type="number"
+    <input
     value="{{companyName}}"
     placeholder="请输入公司名称"
     @input="changeCompanyName"
@@ -95,7 +95,7 @@
   </view>
   <view class="section">
    <text class="label">联系人:</text>
-    <input type="number"
+    <input
     value="{{linkman}}"
     placeholder="请输入联系人"
     @input="changeLinkman"
@@ -103,7 +103,7 @@
   </view>
   <view class="section">
    <text class="label">邮箱:</text>
-    <input type="number"
+    <input
     value="{{email}}"
     @input="changeEmail"
     placeholder="请输入联系邮箱"
