@@ -1,0 +1,151 @@
+<style lang="less">
+  .down{
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background:rgba(21, 107, 194, 1) ;
+      font-size: 32rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 20px;
+      right: 10px;
+      bottom: 50px;
+      color: #fff;
+    }
+</style>
+<template>
+  <view class="container">
+   <canvas style='width:{{screenWidth}}px;height:{{screenHeight}}px;overflow:hidden' canvas-id="firstCanvas"></canvas>
+   <button class="down" @tap.stop="savaImg">保存图片</button>
+  </view>
+  
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import Toast from 'wepy-com-toast'
+  import testMixin from '../mixins/test'
+  import XHR from '../api'
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的邀请码',
+      usingComponents: {
+      }
+    }
+    components = {
+      toast: Toast
+    }
+    mixins = [testMixin]
+
+    data = {
+      canvasImg: '',
+      codeImg: '',
+      count: 0, // 记录次数
+      screenHeight: 0, // 图片高度
+      scale: 0, // 比例
+      screenWidth: 0 // 设备宽度
+    }
+
+    computed = {
+    }
+
+    methods = {
+      savaImg() {
+        wepy.showLoading({
+          title: '保存中...',
+          mask: true
+        })
+        let imgs = this.canvasImg
+        wx.saveImageToPhotosAlbum({
+          filePath: imgs,
+          success: (res) => {
+            wepy.hideLoading()
+            this.showToast('保存成功')
+          },
+          fail: (res) => {
+            wepy.hideLoading()
+            this.showToast('保存失败，可尝试删除小程序重新允许授权！')
+          }
+        })
+      }
+    }
+    drawImg() {
+      let context = wx.createCanvasContext('firstCanvas')
+      context.fillStyle = '#fff'
+      context.fillRect(0, 0, this.screenWidth, this.screenHeight)
+      context.drawImage('../images/share.jpg', 0, 0, this.screenWidth, this.screenHeight)
+      context.drawImage(this.codeImg, this.screenWidth / 2 - 50, 500 * this.scale, 100, 100)
+      let that = this
+      context.draw(false, () => {
+        setTimeout(() => {
+          that.export()
+        }, 1000)
+      })
+    }
+    export() {
+      let that = this
+      wx.canvasToTempFilePath({
+        x: 0,
+        y: 0,
+        width: that.screenWidth,
+        height: this.screenHeight,
+        destWidth: that.screenWidth * 3,
+        destHeight: this.screenHeight * 3,
+        canvasId: 'firstCanvas',
+        success: (res) => {
+          that.canvasImg = res.tempFilePath
+          that.$apply()
+        },
+        fail: function(res) {
+          that.count++
+          if (that.count < 5) {
+            that.export()
+          }
+          that.$apply()
+        }
+      })
+    }
+    async getCode() {
+      try {
+        let json = {
+          openId: this.$parent.globalData.openId,
+          distId: this.$parent.globalData.userInfo.companyId1,
+          page: 'pages/joinCompan',
+          scene: `${this.$parent.globalData.userInfo.companyId1}`
+        }
+        let res = await XHR.getOneShareCode(json)
+        if (res.statusCode === 200) {
+          let {status, data, msg} = res.data
+          if (!status) {
+            wx.downloadFile({
+              url: this.imgUrl + data.path,
+              success: (res) => {
+                this.codeImg = res.tempFilePath
+                this.drawImg()
+                this.$apply()
+              },
+              fail: function(res) {
+                console.log(res)
+              }
+            })
+          } else {
+            this.showToast(msg)
+          }
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    events = {
+    }
+    async onLoad() {
+      await this.getCode()
+      this.screenWidth = wepy.getSystemInfoSync().windowWidth
+      this.scale = this.screenWidth / 375
+      this.screenHeight = this.scale * 667
+    }
+  }
+</script>

@@ -99,7 +99,8 @@ export default class extends wepy.app {
       'pages/share-product',
       'pages/serve-word',
       'pages/search',
-      'pages/joinCompan'
+      'pages/joinCompan',
+      'pages/myCode'
     ],
     window: {
       backgroundTextStyle: 'light',

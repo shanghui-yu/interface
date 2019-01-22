@@ -218,7 +218,7 @@
 
     <view class="{{actionSheet}}" hidden="{{!actionSheet}}" @tap="hideShare" catchtouchmove='{{true}}'>
       <view class="pane">
-        <canvas style='width:{{screenWidth}}px;height:250px;overflow:hidden' canvas-id="firstCanvas"></canvas>
+        <canvas style='width:{{screenWidth}}px;height:{{screenHeight}}px;overflow:hidden' canvas-id="firstCanvas"></canvas>
         <button class="down" @tap.stop="savaImg">保存图片</button>
       </view>
     </view>
@@ -246,7 +246,7 @@
 
   export default class Index extends wepy.page {
     config = {
-      navigationBarTitleText: '',
+      navigationBarTitleText: '个人中心',
       usingComponents: {
       }
     }
@@ -263,6 +263,7 @@
       canvasImg: '',
       codeImg: '',
       count: 0, // 记录次数
+      screenHeight: 0, // 图片高度
       screenWidth: 0 // 设备宽度
     }
 
@@ -288,7 +289,10 @@
         })
       },
       showCode() {
-        this.actionSheet = 'action-sheet'
+        wepy.navigateTo({
+          url: `/pages/myCode`
+        })
+        // this.actionSheet = 'action-sheet'
       },
       hideShare() {
         this.actionSheet = ''
@@ -303,11 +307,11 @@
           filePath: imgs,
           success: (res) => {
             wepy.hideLoading()
-            this.showInfo('保存成功')
+            this.showToast('保存成功')
           },
           fail: (res) => {
             wepy.hideLoading()
-            this.showInfo('保存失败，可尝试删除小程序重新允许授权！')
+            this.showToast('保存失败，可尝试删除小程序重新允许授权！')
           }
         })
       }
@@ -315,10 +319,12 @@
     drawImg() {
       let context = wx.createCanvasContext('firstCanvas')
       context.fillStyle = '#fff'
-      context.fillRect(0, 0, this.screenWidth, 250)
+      context.fillRect(0, 0, this.screenWidth, this.screenHeight)
+      context.drawImage('../images/share.jpg', 0, 0, this.screenWidth, this.screenHeight)
       context.setFontSize(14)
       context.setFillStyle('#17181a')
       context.setTextAlign('center')
+  
       context.fillText(`扫描下方二维码加入`, this.screenWidth / 2, 40)
       context.drawImage(this.codeImg, this.screenWidth / 2 - 60, 80, 120, 120)
       let that = this
@@ -402,6 +408,10 @@
       await this.queryUser()
       await this.getCode()
       this.screenWidth = wepy.getSystemInfoSync().windowWidth
+      let scale = this.screenWidth / 375
+      this.screenHeight = scale * 667
+      console.log(scale * 667)
+  
       if (!this.userInfo.avatarUrl) {
         wepy.redirectTo({
           url: '/pages/authorization?type=me'
