@@ -107,8 +107,6 @@
     }
 
     onLoad(option) {
-      console.log(option)
-  
       this.allNum = option.num
       this.submit.orderId = option.orderId
       this.submit.openId = this.$parent.globalData.openId

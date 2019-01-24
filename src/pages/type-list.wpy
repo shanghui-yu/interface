@@ -94,7 +94,7 @@
             console.log('接口异常')
           }
         }
-      } catch (error) { console.log('接口异常') }
+      } catch (error) { console.log(error) }
     }
     onReachBottom() {
       this.getShopList()
