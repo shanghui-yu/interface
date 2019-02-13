@@ -95,6 +95,7 @@
         <button plain size="mini" @tap="toBuy({{notece}})">购买</button>
       </view>
     </actionShow>
+    <navigator open-type="switchTab" wx:if="{{isShare}}" url="/pages/index" hover-class="none"  class="go-back">首页</navigator>
   </view>
 
 </template>
@@ -126,6 +127,7 @@
       noscroll: '',
       top: '60',
       actionName: '',
+      isShare: false,
       menu: ['成人票', '儿童票', '家庭票(2大1小)', '老人票', '学生票', '学生票'],
       detail: [],
       autoplay: false,
@@ -188,7 +190,7 @@
       return {
         title: this.detail.name,
         imageUrl: this.imgUrl + this.detail.img_path[0],
-        path: `pages/detail??id=${this.detail.id}`
+        path: `pages/detail?id=${this.detail.id}&share=1`
       }
     }
     events = {
@@ -233,6 +235,9 @@
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 110 + 'px'
       this.heights = wepy.getSystemInfoSync().windowHeight * 0.4 - 60 + 'px'
       this.getDetail(option.id)
+      if (option.share) {
+        this.isShare = true
+      }
     }
   }
 </script>
