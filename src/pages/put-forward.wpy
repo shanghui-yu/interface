@@ -49,7 +49,7 @@
       <image class="img" src="../images/auto.png" />
       <view>暂无提现记录</view>
     </view>
-
+    <dialogComp :show.sync="showCancel" :title.sync="title" :content.sync="content" :btnArr.sync="btnArr"></dialogComp>
   </view>
 </template>
 
@@ -58,6 +58,7 @@
   import Toast from 'wepy-com-toast'
   import testMixin from '../mixins/test'
   import USER from '../api/my.js'
+  import dialogComp from '../components/dialogComp'
   export default class typeList extends wepy.page {
     config = {
       navigationBarTitleText: '我要提现',
@@ -65,7 +66,8 @@
       }
     }
     components = {
-      toast: Toast
+      toast: Toast,
+      dialogComp
     }
 
     mixins = [testMixin]
@@ -77,9 +79,21 @@
       loading: true,
       myMoney: {},
       myCommiss: {},
-      lists: []
+      lists: [],
+      title: '提现说明',
+      showCancel: false,
+      btnArr: ['确认'],
+      content: '提现方式：1.微信2.支付宝3.银行卡。\n提现规则：最少提现额度100。每日提现上限:10000。\n提现时间：每周二 9:00-17:00。\n到账周期：一个工作日内。\n提现手续费：每月首次提现免手续费，第二次起收取千分之六。'
     }
-
+    events = {
+      'clickAction': (p1) => {
+        switch (p1) {
+          case '确认':
+            this.showCancel = !this.showCancel
+            break
+        }
+      }
+    }
     computed = {
     }
     getMyCommiss() {
@@ -138,6 +152,8 @@
           } else {
             this.showToast(msg)
           }
+        } else {
+          wepy.hideLoading()
         }
       } catch (error) { console.log('接口异常') }
     }
@@ -150,22 +166,10 @@
     }
     methods = {
       showDesModel() {
-        wepy.showModal({
-          title: '提现说明',
-          showCancel: false,
-          content: '提现方式:1)微信2)支付宝3)银行卡，最少提现额度:100，每日提现上限:10000，提现时间:每周二（9:00-17:00，到账周期：一个工作日内，提现手续费:每月首次提现免手续费，第二次起收取千分之六。'
-        }).then((res) => {
-          if (res.confirm) {
-            console.log('用户点击确定')
-          } else if (res.cancel) {
-            console.log('用户点击取消')
-          }
-        })
+        this.showCancel = !this.showCancel
       }
     }
 
-    events = {
-    }
     onShow() {
       try {
         let setMoney = wx.getStorageSync('setMoney')
