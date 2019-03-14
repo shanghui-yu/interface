@@ -194,7 +194,7 @@ export default class joinCompan extends wepy.page {
       email: this.email,
       companyName: this.companyName
     }
-    let reg = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/
+    let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/
     if (!reg.test(this.email)) {
       this.showToast('请填写正确邮箱格式')
       this.submitdisabled = true

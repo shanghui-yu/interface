@@ -205,12 +205,12 @@
       <navigator class="item" wx:if="{{level==2||tapIndex==1}}" url="/pages/my-dealer?type=2" hover-class="none">
         <view class="my-dealer">我的客户</view>
       </navigator>
-      <navigator class="item" wx:if="{{level!=0}}" url="/pages/share-product?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
-        <view class="my-product">我的分销产品</view>
-      </navigator>
       <view class="item" wx:if="{{level==1||(tapIndex==0&&level==3)}}" @tap="showCode">
         <view class="my-code">我的邀请码</view>
       </view>
+      <navigator class="item" wx:if="{{level!=0}}" url="/pages/share-product?level={{level}}&tapIndex={{tapIndex}}" hover-class="none">
+        <view class="my-product">我的分销产品</view>
+      </navigator>
     </view>
 
     <text class="tel" @tap="call('0311-83922888')">0311-83922888</text>
