@@ -548,8 +548,9 @@
         openId: this.$parent.globalData.openId,
         distId: this.$parent.globalData.userInfo.companyId2,
         productId: item.productId,
-        page: 'pages/buy-tickets',
-        scene: `${item.productId}&${item.salePrice}&${this.$parent.globalData.userInfo.companyId2}`
+        page: 'pages/detail',
+        scene: `${item.productId}`
+        // scene: `${item.productId}&${item.salePrice}&${this.$parent.globalData.userInfo.companyId2}`
         // content: `pages/buy-tickets/?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
       }
       XHR.getWXACode(json).then(res => {
