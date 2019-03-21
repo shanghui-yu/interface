@@ -234,7 +234,13 @@
     onLoad(option) {
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 110 + 'px'
       this.heights = wepy.getSystemInfoSync().windowHeight * 0.4 - 60 + 'px'
-      this.getDetail(option.id)
+      if (option.scene) {
+        this.isShare = true
+        let scene = decodeURIComponent(option.scene)
+        this.getDetail(scene)
+      } else {
+        this.getDetail(option.id)
+      }
       if (option.share) {
         this.isShare = true
       }
