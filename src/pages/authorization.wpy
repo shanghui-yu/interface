@@ -71,7 +71,7 @@
       }
     }
     toAuthorization(json) {
-      json.openId = this.$parent.globalData.openId
+      json.openId = wepy.getStorageSync('openId') || '无'
       XHR.authorization(json).then(res => {
         if (res.statusCode === 200) {
           this.authorOk(json)

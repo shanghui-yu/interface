@@ -292,7 +292,9 @@
     events = {
     }
     async queryUser() {
-      let json = {openId: this.$parent.globalData.openId}
+      let json = {
+        openId: wepy.getStorageSync('openId') || '无'
+      }
       let res = await XHR.queryUser(json)
       try {
         if (res.statusCode === 200) {
@@ -305,7 +307,7 @@
             this.$apply()
           }
         }
-      } catch (error) {}
+      } catch (error) { console.log(error) }
     }
     async onShow() {
       await this.queryUser()
