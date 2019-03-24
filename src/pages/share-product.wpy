@@ -549,7 +549,7 @@
         distId: this.$parent.globalData.userInfo.companyId2,
         productId: item.productId,
         page: 'pages/detail',
-        scene: `${item.productId}`
+        scene: `${item.scenicId}`
         // scene: `${item.productId}&${item.salePrice}&${this.$parent.globalData.userInfo.companyId2}`
         // content: `pages/buy-tickets/?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
       }
