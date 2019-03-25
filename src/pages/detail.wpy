@@ -223,10 +223,16 @@
       }
       XHR.getDetail(json).then(res => {
         if (res.statusCode === 200) {
-          let {result, data} = res.data
+          let {result, data, msg} = res.data
           if (!result) {
             this.detail = data
             this.$apply()
+          } else {
+            wx.showToast({
+              title: `${msg}`,
+              icon: 'none',
+              duration: 2000
+            })
           }
         }
       })

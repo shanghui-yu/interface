@@ -259,11 +259,13 @@
       ajaxStatus: false,
       calendar: [], // 日历
       share: {
-        productName: '欢迎购买',
+        productName: '亚满票务',
         productId: '',
         salePrice: '',
-        picPath: ''
+        picPath: '',
+        scenicId: ''
       },
+      sharPath: `/pages/index`,
       showPoster: false,
       codeImg: '' // 二维码地址
     }
@@ -284,6 +286,7 @@
       showShare(item) {
         this.noscroll = 'no-scroll'
         this.share = item
+        this.sharPath = `/pages/detail?id=${item.scenicId}`
         wepy.showLoading({
           title: '加载中'
         })
@@ -442,11 +445,15 @@
       if (res.from === 'button') {
         this.showPoster = false
         this.$apply()
+      } else {
+        this.sharPath = '/pages/index'
+        this.$apply()
       }
       return {
         title: this.share.productName,
         imageUrl: `${this.imgUrl}${this.share.picPath}`,
-        path: `/pages/buy-tickets?id=${this.share.productId}&price=${this.share.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
+        path: this.sharPath
+        // path: `/pages/buy-tickets?id=${this.share.productId}&price=${this.share.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
       }
     }
     downImg(item) {
