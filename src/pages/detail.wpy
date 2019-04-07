@@ -237,13 +237,32 @@
         }
       })
     }
+    userDistribution(distId) {
+      try {
+        let openId = wepy.getStorageSync('openId')
+        let json = {
+          openId,
+          distId
+        }
+        XHR.userDistribution(json).then(res => {
+          console.log(res.data)
+        })
+      } catch (error) {}
+    }
     onLoad(option) {
       this.height = wepy.getSystemInfoSync().windowHeight * 0.8 - 110 + 'px'
       this.heights = wepy.getSystemInfoSync().windowHeight * 0.4 - 60 + 'px'
+      if (option.distId) {
+        wepy.setStorageSync('distId', option.distId)
+        this.userDistribution(option.distId)
+      }
       if (option.scene) {
         this.isShare = true
         let scene = decodeURIComponent(option.scene)
-        this.getDetail(scene)
+        scene = scene.split('&')
+        this.getDetail(scene[0])
+        wepy.setStorageSync('distId', scene[1])
+        this.userDistribution(scene[1])
       } else {
         this.getDetail(option.id)
       }

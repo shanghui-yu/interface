@@ -145,10 +145,26 @@
         title: '欢迎访问亚满票务'
       }
     }
-    async onLoad() {
+    userDistribution(distId) {
+      try {
+        let openId = wepy.getStorageSync('openId')
+        let json = {
+          openId,
+          distId
+        }
+        XHR.userDistribution(json).then(res => {
+          console.log(res.data)
+        })
+      } catch (error) {}
+    }
+    async onLoad(option) {
       await this.getBanner()
       await this.getCategory()
       await this.getShopList()
+      if (option.distId) {
+        wepy.setStorageSync('distId', option.distId)
+        this.userDistribution(option.distId)
+      }
       // wepy.navigateTo({
       //   url: `/pages/joinCompan`
       // })

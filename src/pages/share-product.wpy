@@ -286,7 +286,7 @@
       showShare(item) {
         this.noscroll = 'no-scroll'
         this.share = item
-        this.sharPath = `/pages/detail?id=${item.scenicId}`
+        this.sharPath = `/pages/detail?id=${item.scenicId}&distId=${this.$parent.globalData.userInfo.companyId2}`
         wepy.showLoading({
           title: '加载中'
         })
@@ -446,7 +446,7 @@
         this.showPoster = false
         this.$apply()
       } else {
-        this.sharPath = '/pages/index'
+        this.sharPath = `/pages/index?distId=${this.$parent.globalData.userInfo.companyId2}`
         this.$apply()
       }
       return {
@@ -556,7 +556,7 @@
         distId: this.$parent.globalData.userInfo.companyId2,
         productId: item.productId,
         page: 'pages/detail',
-        scene: `${item.scenicId}`
+        scene: `${item.scenicId}&${this.$parent.globalData.userInfo.companyId2}`
         // scene: `${item.productId}&${item.salePrice}&${this.$parent.globalData.userInfo.companyId2}`
         // content: `pages/buy-tickets/?id=${item.productId}&price=${item.salePrice}&distId=${this.$parent.globalData.userInfo.companyId2}`
       }
