@@ -1,13 +1,25 @@
 
 <template>
   <view class="container">
-    <!-- 状态 -->
-    <view class="top">
+     <!-- 状态 -->
+    <!-- <view class="top">
       <view class="main">
         <text class="title">{{orderDetai.status}}</text>
         <text>{{statusDes}}</text>
       </view>
       <view class="price">{{orderDetai.totalMoney}}</view>
+    </view> -->
+
+    <!-- 订单信息 -->
+    <view class="list flex">
+      <view class="content">
+        <text class="title">订单信息</text>
+        <text class="item"><text class="lable">订单状态：</text>{{orderDetai.status}}</text>
+        <view class="item"><text class="lable">订单号：</text>{{orderDetai.orderNum}}</view>
+        <view class="item"><text class="lable">下单时间：</text>{{orderDetai.addTime}}</view>
+        <view class="item"><text class="lable">凭证码：</text>{{orderDetai.orderCode}}</view>
+      </view>
+      <view class="price">￥{{orderDetai.totalMoney}}</view>
     </view>
 
     <!-- 产品信息 -->
@@ -16,8 +28,9 @@
       <view class="item tips">{{orderDetai.scenicName+"-"+orderDetai.productName}}</view>
       <view class="item"><text class="lable">出行日期：</text>{{orderDetai.playDate}}</view>
       <view class="item"><text class="lable">门票：</text>￥{{orderDetai.totalMoney}} x {{orderDetai.totalNum}}</view>
+     
     </view>
-    
+
      <!-- 出行人信息 -->
     <view class="list flex" wx:if="{{orderDetai.playUser.length}}">
       <view class="content">
@@ -34,16 +47,7 @@
       <view class="item"><text class="lable">手机号：</text>{{orderDetai.orderUserMobile}}</view>
     </view>
 
-    <!-- 订单信息 -->
-    <view class="list flex">
-      <view class="content">
-        <text class="title">订单信息</text>
-        <view class="item"><text class="lable">订单号：</text>{{orderDetai.orderNum}}</view>
-        <view class="item"><text class="lable">下单时间：</text>{{orderDetai.addTime}}</view>
-      </view>
-      <view class="price">￥{{orderDetai.totalMoney}}</view>
-    </view>
-
+   
     <!-- 退款记录 -->
     <view class="list" wx:if="{{orderDetai.returnList.length}}">
       <text class="title">退款记录</text>
@@ -163,20 +167,19 @@
           let {result, data} = res.data
           if (!result) {
             this.orderDetai = data
-  
-            switch (data.status) {
-              case '待支付':
-                this.statusDes = '请尽快支付，来完成本次交易！'
-                break
-              case '已支付':
-                this.statusDes = '支付完成，请尽快安排出行！'
-                break
-              case '已出票':
-                this.statusDes = '交易完成，期待你的下次出现！'
-                break
-              default:
-                break
-            }
+            // switch (data.status) {
+            //   case '待支付':
+            //     this.statusDes = '请尽快支付，来完成本次交易！'
+            //     break
+            //   case '已支付':
+            //     this.statusDes = '支付完成，请尽快安排出行！'
+            //     break
+            //   case '已出票':
+            //     this.statusDes = '交易完成，期待你的下次出现！'
+            //     break
+            //   default:
+            //     break
+            // }
             this.$apply()
           }
         }
