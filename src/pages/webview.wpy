@@ -28,6 +28,9 @@
     computed = {
     }
     getBannerDetail (bannerId) {
+      wx.showLoading({
+        title: '加载中'
+      })
       let json = {
         bannerId
       }
@@ -38,6 +41,7 @@
             let BannerDetail = data.content
             this.replaceKeyWord(BannerDetail, this.replaceStr)
             WxParse.wxParse('BannerDetail', 'html', BannerDetail, this, 0)
+            wx.hideLoading()
           }
         }
       })
@@ -56,6 +60,6 @@
 <style lang="less" scoped>
   @import "../wxParse/wxParse.wxss";
   .container{
-    padding: 0 15px;
+    padding: 0 30rpx;
   }
 </style>
