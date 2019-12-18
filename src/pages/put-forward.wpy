@@ -285,12 +285,14 @@
      }
    }
    .tbody-tr{
-     line-height: 80rpx;
-     height: 80rpx;
+     min-height: 80rpx;
+     align-items: center;
      font-size: 28rpx;
      color: #333333;
      position: relative;
      display: flex;
+     padding: 12rpx 0;
+     box-sizing: border-box;
      text,navigator{
        flex:1;
        text-align: center;
