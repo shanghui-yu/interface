@@ -279,6 +279,7 @@
           itemColor: '#2d85b4'
         }).then(res => {
           this.tapIndex = res.tapIndex
+          wepy.setStorageSync('tapIndex', res.tapIndex)
           this.$apply()
         })
       },
@@ -302,7 +303,7 @@
           if (!result) {
             this.userInfo = data
             this.$parent.globalData.userInfo = data
-            wepy.setStorageSync('userInfo', data)
+            wepy.setStorageSync('userinfo', data)
             wepy.setStorageSync('phone', data.mobile)
             this.$apply()
           }

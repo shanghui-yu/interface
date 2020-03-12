@@ -12,6 +12,7 @@
     <!-- 描述 -->
     <view class="descipt">
       <text class="name">{{detail.name}}</text>
+      <button class="btn-share" wx:if="{{level==2}}" open-type="share">转发</button>
        <view class="tips des">
         <text class="item" @tap="showDes">简介</text>
         <text class="item" @tap="showStandard">收费标准</text>
@@ -139,7 +140,10 @@
       notece: {},
       replaceStr: { // 过滤规则 方便以后添加写了一个对象，新加过滤规则的话 在这里面添加就行
         'alt=.+?(?=\\/>)': ''
-      }
+      },
+      level: 0,
+      sharPath: '',
+      userInfo: {}
     }
 
     computed = {
@@ -190,7 +194,7 @@
       return {
         title: this.detail.name,
         imageUrl: this.imgUrl + this.detail.img_path[0],
-        path: `pages/detail?id=${this.detail.id}&share=1`
+        path: this.sharPath
       }
     }
     events = {
@@ -270,6 +274,42 @@
         this.isShare = true
       }
     }
+    async queryUser() {
+      let json = {
+        openId: wepy.getStorageSync('openId') || '无'
+      }
+      let res = await XHR.queryUser(json)
+      try {
+        if (res.statusCode === 200) {
+          let {data, result} = res.data
+          if (!result) {
+            this.userInfo = data
+            this.$parent.globalData.userInfo = data
+            wepy.setStorageSync('userinfo', data)
+            this.$apply()
+          }
+        }
+      } catch (error) { console.log(error) }
+    }
+    async onShow() {
+      await this.queryUser()
+      this.sharPath = `pages/detail?id=${this.detail.id}&share=1`
+      if (this.userInfo) {
+        if (this.userInfo.userLevel1 !== '' && this.userInfo.userLevel2 === '') {
+          this.level = 1
+        } else if (this.userInfo.userLevel1 === '' && this.userInfo.userLevel2 !== '') {
+          this.level = 2
+          this.sharPath = `pages/detail?id=${this.detail.id}&share=1&distId=${this.userInfo.companyId2}`
+        } else if (this.userInfo.userLevel1 !== '' && this.userInfo.userLevel2 !== '') {
+          let tapIndex = wepy.getStorageSync('tapIndex')
+          if (tapIndex && tapIndex !== '0') {
+            this.level = 2
+            this.sharPath = `pages/detail?id=${this.detail.id}&share=1&distId=${this.userInfo.companyId2}`
+          }
+        }
+      }
+      this.$apply()
+    }
   }
 </script>
 <style lang="less" scoped>
@@ -293,6 +333,15 @@
   padding: 0 32rpx;
   font-size: 28rpx;
   color: #333;
+  position: relative;
+  .btn-share{
+    width: 100rpx;
+    position: absolute;
+    right: 32rpx;
+    top: 20rpx;
+    z-index: 1;
+    font-size: 24rpx;
+  }
   .name{
     font-size: 36rpx;
     line-height: 100rpx;

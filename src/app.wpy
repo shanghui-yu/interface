@@ -180,6 +180,7 @@ export default class extends wepy.app {
         this.queryUser(openId)
         this.userDistribution()
       }
+      wx.removeStorageSync('tapIndex')
     } catch (error) { console.log(error) }
   }
   getopenId (code) {
